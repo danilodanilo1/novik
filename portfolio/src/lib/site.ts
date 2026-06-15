@@ -4,7 +4,7 @@ export const siteConfig = {
   name: "Matheus Nascimento",
   title: "Matheus Nascimento | Editor de Vídeo · eSports & Campanhas",
   description: cvContent.summary,
-  url: "https://matheusnascimento.dev",
+  url: "https://portfolio-jade-ten-80.vercel.app",
   locale: "pt_BR",
   email: "novikmovies@gmail.com",
   phone: "+5511953031803",
