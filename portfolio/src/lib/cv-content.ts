@@ -141,16 +141,6 @@ export const cvContent = {
     contract: "Prestador de Serviços (PJ)",
     schedule: "Período Integral",
   },
-
-  bootSequence: [
-    "Carregando Adobe Premiere Pro...",
-    "Conectando aos servidores W7M...",
-    "Sincronizando campanhas Netflix...",
-    "Importando assets iFood & Mercado Livre...",
-    "Ativando pipeline ElevenLabs AI...",
-    "Localizando conteúdo em 5 idiomas...",
-    "SISTEMA PRONTO.",
-  ],
 } as const;
 
 export type FeaturedWork = (typeof cvContent.featuredWork)[number];

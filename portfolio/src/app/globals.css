@@ -268,14 +268,8 @@ body {
 }
 
 @media (pointer: fine) {
-  html.custom-cursor-active,
-  html.custom-cursor-active body {
-    cursor: none;
-  }
-
-  .interactive:hover ~ #cursor-crosshair {
-    transform: translate(-50%, -50%) scale(1.5);
-    border-color: #ef4444;
+  .interactive:hover {
+    cursor: pointer;
   }
 }
 
