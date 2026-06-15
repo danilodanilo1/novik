@@ -1,0 +1,32 @@
+# dependencies
+portfolio/node_modules/
+portfolio/.pnp
+portfolio/.pnp.*
+
+# next.js
+portfolio/.next/
+portfolio/out/
+
+# production
+portfolio/build/
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env
+.env*
+portfolio/.env*
+
+# vercel
+.vercel
+portfolio/.vercel
+
+# typescript
+portfolio/*.tsbuildinfo
+portfolio/next-env.d.ts
