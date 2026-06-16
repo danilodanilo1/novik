@@ -7,6 +7,8 @@ export const siteConfig = {
   url: "https://portfolio-jade-ten-80.vercel.app",
   locale: "pt_BR",
   email: "novikmovies@gmail.com",
+  youtube: "https://www.youtube.com/@novikmovies",
+  youtubeHandle: "@novikmovies",
   phone: "+5511953031803",
   phoneDisplay: "(11) 95303-1803",
   location: "São Paulo, SP",

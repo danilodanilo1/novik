@@ -41,19 +41,6 @@ export const cvContent = {
         "Adobe Photoshop",
       ],
     },
-    {
-      company: "Locaweb",
-      role: "Analista de Suporte",
-      location: "São Paulo, SP",
-      period: "Jan 2018 — Out 2018",
-      description:
-        "Suporte técnico a clientes de hospedagem: criação de sites, configuração de e-mails e resolução de chamados. Experiência que reforça visão de entrega digital ponta a ponta.",
-      highlights: [
-        "Suporte a hospedagem e e-mail",
-        "Atendimento e gestão de chamados",
-      ],
-      tools: ["Windows"],
-    },
   ],
 
   featuredWork: [
@@ -141,7 +128,89 @@ export const cvContent = {
     contract: "Prestador de Serviços (PJ)",
     schedule: "Período Integral",
   },
+
+  gamingChannel: {
+    name: "Novik Movies",
+    handle: "@novikmovies",
+    url: "https://www.youtube.com/@novikmovies",
+    channelId: "UCpMiajQ5U5b72bWC2pDtkYQ",
+  },
+
+  gamingClips: [
+    {
+      title: "NÓS SOMOS MIBR...",
+      tag: "FRAGMOVIE",
+      duration: "1:24",
+      views: "61 mil",
+      desc: "FragMovie da MIBR — Katowice 2019. O vídeo mais visto do canal Novik Movies.",
+      videoId: "hl3m5BPLC4Q",
+      embedBlocked: true,
+      image: "https://i.ytimg.com/vi/hl3m5BPLC4Q/hqdefault.jpg",
+    },
+    {
+      title: "SOFRÊNCIA pt.3 — ft. Fallenzão",
+      tag: "CS:GO",
+      duration: "0:32",
+      views: "45 mil",
+      desc: "Edit de CS:GO com Fallenzão — série Sofrência, sync de áudio e cortes no beat.",
+      videoId: "Q3GC2bczNaw",
+      embedBlocked: false,
+      image: "https://i.ytimg.com/vi/Q3GC2bczNaw/hqdefault.jpg",
+    },
+    {
+      title: "EU TO VOANDO ALTO — ft. Kscerato",
+      tag: "FRAGMOVIE",
+      duration: "0:49",
+      views: "35 mil",
+      desc: "FragMovie com Kscerato — trilha MC Poze; abre direto no YouTube por restrição de embed.",
+      videoId: "3kNNiiK70Y0",
+      embedBlocked: true,
+      image: "https://i.ytimg.com/vi/3kNNiiK70Y0/hqdefault.jpg",
+    },
+    {
+      title: "SOFRÊNCIA pt.2",
+      tag: "CS:GO",
+      duration: "0:43",
+      views: "28 mil",
+      desc: "Segunda parte da série Sofrência — ritmo e narrativa competitiva.",
+      videoId: "PEroWu6n65g",
+      embedBlocked: false,
+      image: "https://i.ytimg.com/vi/PEroWu6n65g/hqdefault.jpg",
+    },
+    {
+      title: "kNgV \"KENNY G\"",
+      tag: "EDIT",
+      duration: "0:23",
+      views: "28 mil",
+      desc: "Edit rápido e impactante com a energia clássica dos fragmovies W7M.",
+      videoId: "h12J7gyT3Pw",
+      embedBlocked: false,
+      image: "https://i.ytimg.com/vi/h12J7gyT3Pw/hqdefault.jpg",
+    },
+    {
+      title: "VOU MACHUCAR SÓ UM POUQUIN",
+      tag: "FRAGMOVIE",
+      duration: "0:39",
+      views: "22 mil",
+      desc: "FragMovie com fallenzão e fnx — highlight editado para YouTube.",
+      videoId: "Tj6fJiGlsqY",
+      embedBlocked: false,
+      image: "https://i.ytimg.com/vi/Tj6fJiGlsqY/hqdefault.jpg",
+    },
+  ],
 } as const;
+
+export type GamingClip = {
+  title: string;
+  tag: string;
+  duration: string;
+  views: string;
+  desc: string;
+  videoId: string | null;
+  /** Trilha/licença impede embed — abre no YouTube ao clicar. */
+  embedBlocked?: boolean;
+  image: string;
+};
 
 export type FeaturedWork = (typeof cvContent.featuredWork)[number];
 export type Experience = (typeof cvContent.experience)[number];

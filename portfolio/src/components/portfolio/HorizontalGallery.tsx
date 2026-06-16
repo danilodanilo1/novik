@@ -1,77 +1,203 @@
 "use client";
 
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Play } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef } from "react";
+import { BulletSprite } from "@/components/portfolio/BulletSprite";
+import { GamingClipsSection } from "@/components/portfolio/GamingClipsSection";
+import {
+  applyBulletTear,
+  buildTearClipPath,
+  hideBulletTear,
+} from "@/lib/bullet-tear";
 import { cvContent } from "@/lib/cv-content";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const cases = cvContent.featuredWork;
 const caseCount = cases.length;
 const scrollTranslate = ((caseCount - 1) / caseCount) * 100;
 
+/** Galeria horizontal termina em 26% · bala começa com último vídeo centralizado (~86%) · rasgo até ~35% */
+const GALLERY_PHASE = 0.26;
+const TEAR_START = GALLERY_PHASE * 0.86;
+const TEAR_END = GALLERY_PHASE + 0.09;
+
 export function HorizontalGallery() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
+  const gamingLayerRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const galleryTrackRef = useRef<HTMLDivElement>(null);
+  const bgTextRef = useRef<HTMLSpanElement>(null);
+  const bulletWrapRef = useRef<HTMLDivElement>(null);
+  const fireTrailRef = useRef<HTMLDivElement>(null);
+  const fireCoreRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!containerRef.current) return;
-      const { top, height } = containerRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const scrollableDistance = height - windowHeight;
-      const scrolled = -top;
+  useLayoutEffect(() => {
+    const section = sectionRef.current;
+    const pin = pinRef.current;
+    const gamingLayer = gamingLayerRef.current;
+    const overlay = overlayRef.current;
+    const galleryTrack = galleryTrackRef.current;
+    const bgText = bgTextRef.current;
+    const bulletWrap = bulletWrapRef.current;
+    const fireTrail = fireTrailRef.current;
+    const fireCore = fireCoreRef.current;
 
-      let progress = scrolled / scrollableDistance;
-      progress = Math.max(0, Math.min(1, progress));
+    if (
+      !section ||
+      !pin ||
+      !gamingLayer ||
+      !overlay ||
+      !galleryTrack ||
+      !bgText ||
+      !bulletWrap ||
+      !fireTrail ||
+      !fireCore
+    ) {
+      return;
+    }
 
-      setScrollProgress(progress);
-    };
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    if (reducedMotion) {
+      gsap.set(overlay, { display: "none" });
+      gsap.set([bulletWrap, fireTrail, fireCore], { display: "none" });
+      return;
+    }
+
+    hideBulletTear(overlay, bulletWrap, fireTrail, fireCore);
+
+    const getGamingScrollMax = () =>
+      Math.max(0, gamingLayer.scrollHeight - window.innerHeight);
+
+    const mm = gsap.matchMedia();
+
+    mm.add(
+      { isMobile: "(max-width: 768px)", isDesktop: "(min-width: 769px)" },
+      (context) => {
+        const { isMobile } = context.conditions as { isMobile: boolean };
+        const scrollDistance = isMobile ? "+=340%" : "+=420%";
+
+        const st = ScrollTrigger.create({
+          trigger: section,
+          start: "top top",
+          end: scrollDistance,
+          pin: pin,
+          scrub: 0.35,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            const p = self.progress;
+            const gamingScrollMax = getGamingScrollMax();
+
+            const galleryProgress = Math.min(1, p / GALLERY_PHASE);
+
+            gsap.set(galleryTrack, {
+              x: `${-galleryProgress * scrollTranslate}%`,
+              force3D: true,
+            });
+            gsap.set(bgText, {
+              x: `${-galleryProgress * 50}%`,
+              force3D: true,
+            });
+
+            if (p >= TEAR_END) {
+              hideBulletTear(
+                overlay,
+                bulletWrap,
+                fireTrail,
+                fireCore,
+                true,
+              );
+
+              const clipsProgress = (p - TEAR_END) / (1 - TEAR_END);
+              gsap.set(gamingLayer, {
+                y: -clipsProgress * gamingScrollMax,
+                force3D: true,
+              });
+            } else if (p >= TEAR_START) {
+              const tearProgress = Math.min(
+                1,
+                (p - TEAR_START) / (TEAR_END - TEAR_START),
+              );
+              applyBulletTear(
+                tearProgress,
+                overlay,
+                bulletWrap,
+                fireTrail,
+                fireCore,
+              );
+              gsap.set(gamingLayer, { y: 0, force3D: true });
+            } else {
+              hideBulletTear(overlay, bulletWrap, fireTrail, fireCore);
+              gsap.set(gamingLayer, { y: 0, force3D: true });
+            }
+          },
+        });
+
+        return () => st.kill();
+      },
+    );
+
+    return () => mm.revert();
   }, []);
 
   return (
     <section
-      ref={containerRef}
-      className="relative z-20 h-[350vh] bg-[#f5f5f7] shadow-[0_-30px_50px_rgba(245,245,247,1)]"
-      aria-label="Marcas e projetos selecionados"
+      ref={sectionRef}
+      id="marcas-projetos"
+      className="relative z-20 bg-[#050505]"
+      aria-label="Marcas, projetos e highlights eSports"
     >
-      <div className="sticky top-0 flex h-screen w-full items-center overflow-hidden bg-[#f5f5f7]">
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden opacity-[0.03]">
-          <span
-            className="transform text-[30vw] font-bold whitespace-nowrap text-black"
-            style={{
-              transform: `translateX(${-scrollProgress * 50}%)`,
-              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-            }}
-            aria-hidden="true"
-          >
-            MARCAS & PROJETOS
-          </span>
+      <div
+        ref={pinRef}
+        className="relative h-screen w-full touch-pan-y overflow-hidden"
+      >
+        {/* Gaming clips — sempre por baixo, revelado pelo rasgo */}
+        <div
+          ref={gamingLayerRef}
+          className="absolute top-0 left-0 z-0 w-full will-change-transform"
+        >
+          <GamingClipsSection embedded />
         </div>
 
+        {/* Overlay claro com galeria horizontal — rasgado pela bala */}
         <div
-          className="flex h-[80vh] items-center gap-16 px-[8vw] transition-transform duration-75 ease-out md:gap-20 md:px-[10vw]"
-          style={{
-            transform: `translateX(${-scrollProgress * scrollTranslate}%)`,
-            width: `${caseCount * 100}vw`,
-          }}
+          ref={overlayRef}
+          className="absolute inset-0 z-20 overflow-hidden bg-[#f5f5f7] will-change-[clip-path]"
+          style={{ clipPath: buildTearClipPath(108) }}
         >
-          {cases.map((work, idx) => {
-            const itemPosition = idx / (caseCount - 1);
-            const distance = Math.abs(scrollProgress - itemPosition);
-            const isActive = distance < 0.15;
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden opacity-[0.03]">
+            <span
+              ref={bgTextRef}
+              className="text-[30vw] font-bold whitespace-nowrap text-black"
+              style={{ fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}
+              aria-hidden="true"
+            >
+              PROJETOS
+            </span>
+          </div>
 
-            return (
+          <div
+            ref={galleryTrackRef}
+            className="flex h-full items-center gap-16 px-[8vw] md:gap-20 md:px-[10vw]"
+            style={{
+              width: `${caseCount * 100}vw`,
+              willChange: "transform",
+            }}
+          >
+            {cases.map((work, idx) => (
               <article
                 key={work.brand}
-                className={`interactive group flex h-full w-[85vw] shrink-0 flex-col items-center gap-10 transition-opacity duration-500 md:w-[60vw] md:flex-row md:gap-12 ${isActive ? "opacity-100" : "opacity-30"}`}
+                className="interactive group flex h-[80vh] w-[85vw] shrink-0 flex-col items-center gap-10 md:w-[60vw] md:flex-row md:gap-12"
               >
-                <div
-                  className={`relative h-[40vh] w-full overflow-hidden rounded-3xl bg-black shadow-2xl transition-transform duration-700 md:h-[70%] md:w-[60%] ${isActive ? "scale-100" : "scale-95"}`}
-                >
+                <div className="relative h-[40vh] w-full overflow-hidden rounded-3xl bg-black shadow-2xl md:h-[70%] md:w-[60%]">
                   <Image
                     src={work.image}
                     alt={`Projeto ${work.brand} — ${work.title}`}
@@ -119,8 +245,30 @@ export function HorizontalGallery() {
                   </p>
                 </div>
               </article>
-            );
-          })}
+            ))}
+          </div>
+        </div>
+
+        {/* Bala + fogo — só visível na fase de rasgo */}
+        <div
+          ref={fireTrailRef}
+          className="bullet-fire-trail pointer-events-none absolute top-1/2 z-30 h-10 -translate-y-1/2 sm:h-14"
+          style={{ left: "108vw", width: 0, opacity: 0 }}
+        />
+        <div
+          ref={bulletWrapRef}
+          className="pointer-events-none absolute top-1/2 z-40 -translate-y-1/2 will-change-transform"
+          style={{ left: "108vw", ["--bullet-tip-offset" as string]: "10%" }}
+        >
+          <div
+            ref={fireCoreRef}
+            className="bullet-fire-core absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2"
+            aria-hidden="true"
+          />
+          <BulletSprite
+            direction="left"
+            className="relative h-16 w-60 sm:h-20 sm:w-72 md:h-24 md:w-[22rem]"
+          />
         </div>
       </div>
     </section>

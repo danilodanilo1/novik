@@ -285,3 +285,91 @@ body {
 .animate-fade-in {
   animation: fade-in 1s ease-out forwards;
 }
+
+.bullet-transition-track {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.bullet-sprite-image {
+  mix-blend-mode: screen;
+}
+
+/* Recorte mínimo na borda do PNG (~2px na ponta após espelhar) */
+.bullet-sprite-crop {
+  overflow: hidden;
+  line-height: 0;
+}
+
+.bullet-sprite-crop--left {
+  clip-path: inset(0 0 0 2px);
+  /* Ponta da bala alinhada ao ápice do rasgo (borda esquerda do wrap) */
+  transform: translateX(calc(-1 * var(--bullet-tip-offset, 10%)));
+}
+
+.bullet-sprite-crop--right {
+  clip-path: inset(0 2px 0 0);
+}
+
+.bullet-sprite-crop--left .bullet-sprite-image {
+  transform: scaleX(-1);
+  width: calc(100% + 2px);
+  margin-left: -2px;
+  object-position: left center;
+}
+
+.bullet-sprite-crop--right .bullet-sprite-image {
+  object-position: 95% center;
+}
+
+.bullet-fire-trail {
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 80, 0, 0.08) 20%,
+    rgba(255, 140, 0, 0.35) 50%,
+    rgba(255, 200, 50, 0.55) 75%,
+    rgba(255, 255, 200, 0.7) 100%
+  );
+  filter: blur(10px);
+  mix-blend-mode: screen;
+  animation: fire-trail-flicker 0.12s infinite alternate;
+  transform-origin: left center;
+  will-change: width, opacity, left;
+}
+
+.bullet-fire-core {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 200, 50, 0.85) 25%,
+    rgba(255, 100, 0, 0.6) 50%,
+    rgba(255, 40, 0, 0.25) 70%,
+    transparent 75%
+  );
+  filter: blur(3px);
+  mix-blend-mode: screen;
+  animation: fire-core-flicker 0.07s infinite alternate;
+  will-change: transform, opacity;
+}
+
+@keyframes fire-trail-flicker {
+  from {
+    filter: blur(10px) brightness(1);
+  }
+  to {
+    filter: blur(14px) brightness(1.12);
+  }
+}
+
+@keyframes fire-core-flicker {
+  from {
+    filter: blur(4px) brightness(1.05);
+  }
+  to {
+    filter: blur(6px) brightness(1.2);
+  }
+}
