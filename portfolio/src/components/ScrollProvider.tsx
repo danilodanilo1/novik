@@ -24,26 +24,13 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
 
     const touch = isTouchDevice();
 
-    if (touch) {
-      ScrollTrigger.normalizeScroll(true);
-      ScrollTrigger.config({ ignoreMobileResize: true });
-      ScrollTrigger.refresh();
-
-      const refresh = () => ScrollTrigger.refresh();
-      window.addEventListener("load", refresh);
-      window.addEventListener("orientationchange", refresh);
-
-      return () => {
-        window.removeEventListener("load", refresh);
-        window.removeEventListener("orientationchange", refresh);
-        ScrollTrigger.normalizeScroll(false);
-      };
-    }
-
     const lenis = new Lenis({
-      lerp: 0.1,
-      smoothWheel: true,
-      syncTouch: false,
+      lerp: touch ? 0.12 : 0.1,
+      smoothWheel: !touch,
+      syncTouch: touch,
+      syncTouchLerp: 0.085,
+      touchInertiaExponent: 1.65,
+      touchMultiplier: 1.15,
       wheelMultiplier: 0.9,
     });
 
@@ -61,11 +48,20 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
 
     const refresh = () => ScrollTrigger.refresh();
     window.addEventListener("load", refresh);
-    window.addEventListener("resize", refresh);
+
+    if (touch) {
+      window.addEventListener("orientationchange", refresh);
+    } else {
+      window.addEventListener("resize", refresh);
+    }
 
     return () => {
       window.removeEventListener("load", refresh);
-      window.removeEventListener("resize", refresh);
+      if (touch) {
+        window.removeEventListener("orientationchange", refresh);
+      } else {
+        window.removeEventListener("resize", refresh);
+      }
       gsap.ticker.remove(tickerCallback);
       lenis.destroy();
     };
