@@ -35,6 +35,11 @@ export function ExperienceSection() {
                 <p className="mt-1 text-sm font-semibold text-zinc-400">
                   {job.company}
                 </p>
+                {"audience" in job && job.audience ? (
+                  <p className="mt-2 font-mono text-xs font-bold tracking-widest text-red-400 uppercase">
+                    {job.audience}
+                  </p>
+                ) : null}
                 <p className="mt-1 text-xs text-zinc-600">{job.location}</p>
               </div>
 

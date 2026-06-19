@@ -1,3 +1,4 @@
+import { CvDownloadGroup } from "@/components/cv/CvDownloadGroup";
 import { cvContent } from "@/lib/cv-content";
 
 export function AboutSection() {
@@ -25,9 +26,9 @@ export function AboutSection() {
 
         <div className="mt-12 flex flex-wrap gap-3">
           {[
-            "5+ anos W7M Gaming",
+            "2,1M+ inscritos · Receitas Aprenda",
+            "W7M · 60K+ inscritos",
             "Netflix · BB · iFood · Mercado Livre",
-            "YouTube & Reels",
             "IA & 5 idiomas",
           ].map((badge) => (
             <span
@@ -37,6 +38,10 @@ export function AboutSection() {
               {badge}
             </span>
           ))}
+        </div>
+
+        <div className="mt-10">
+          <CvDownloadGroup surface="light" />
         </div>
       </div>
     </section>

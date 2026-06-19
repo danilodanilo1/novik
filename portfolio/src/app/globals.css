@@ -303,8 +303,9 @@ body {
 
 .bullet-sprite-crop--left {
   clip-path: inset(0 0 0 2px);
-  /* Ponta da bala alinhada ao ápice do rasgo (borda esquerda do wrap) */
-  transform: translateX(calc(-1 * var(--bullet-tip-offset, 10%)));
+  /* Ponta na origem (0,0) do wrap — corpo da bala estende para a direita */
+  transform: none;
+  overflow: visible;
 }
 
 .bullet-sprite-crop--right {
@@ -315,7 +316,8 @@ body {
   transform: scaleX(-1);
   width: calc(100% + 2px);
   margin-left: -2px;
-  object-position: left center;
+  /* Alinhar com METALLIC_TIP_RATIO em bullet-tear.ts (0.09 = 9%) */
+  object-position: 9% center;
 }
 
 .bullet-sprite-crop--right .bullet-sprite-image {

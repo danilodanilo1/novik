@@ -1,4 +1,5 @@
 import { Mail, MapPin, Phone } from "lucide-react";
+import { CvDownloadGroup } from "@/components/cv/CvDownloadGroup";
 import { cvContent } from "@/lib/cv-content";
 import { siteConfig } from "@/lib/site";
 
@@ -19,27 +20,28 @@ export function ContactSection() {
               id="contact-heading"
               className="text-4xl font-black tracking-tighter text-white md:text-6xl"
             >
-              Vamos editar juntos?
+              Vamos criar juntos?
             </h2>
             <p className="mt-4 max-w-xl text-lg text-zinc-400">
-              {siteConfig.name}, {siteConfig.age} anos — editor de vídeo em{" "}
-              {siteConfig.location}. Busco oportunidades em{" "}
+              {siteConfig.name} — editor de vídeo em{" "}
+              {siteConfig.location}. Projetos AAA e AAA+{" "}
               <strong className="text-zinc-300">
                 {cvContent.availability.roles}
-              </strong>
-              , em regime de{" "}
-              <strong className="text-zinc-300">
-                {cvContent.availability.schedule.toLowerCase()}
               </strong>
               .
             </p>
           </div>
-          <a
-            href={`mailto:${siteConfig.email}?subject=Proposta%20Audiovisual%20-%20Matheus%20Nascimento`}
-            className="interactive inline-flex items-center justify-center bg-red-600 px-10 py-4 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-red-500"
-          >
-            Enviar proposta
-          </a>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <a
+              href={siteConfig.whatsappProposalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="interactive inline-flex items-center justify-center bg-red-600 px-10 py-4 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-red-500"
+            >
+              Enviar proposta
+            </a>
+            <CvDownloadGroup />
+          </div>
         </div>
 
         <address className="grid gap-8 not-italic md:grid-cols-3">

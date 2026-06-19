@@ -15,7 +15,7 @@ export function GamingClipsSection({ embedded = false }: GamingClipsSectionProps
       id={embedded ? undefined : "gaming-clips"}
       className={
         embedded
-          ? "w-full bg-[#050505] px-4 py-12 sm:px-8 md:px-16"
+          ? "w-full bg-[#050505] px-4 py-12 pb-24 sm:px-8 md:px-16"
           : "relative bg-[#050505] px-4 py-16 sm:px-8 sm:py-24 md:px-16"
       }
       aria-labelledby="gaming-clips-heading"

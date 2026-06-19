@@ -2,6 +2,7 @@
 
 import { Cpu, FastForward, MonitorPlay } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { CvDownloadGroup } from "@/components/cv/CvDownloadGroup";
 import { cvContent } from "@/lib/cv-content";
 
 export function CurrentProjects() {
@@ -47,12 +48,15 @@ export function CurrentProjects() {
               Edição rítmica, inteligência artificial aplicada e escala multilíngue.
             </p>
           </div>
-          <a
-            href="#contact"
-            className="interactive mt-8 flex items-center gap-2 bg-white px-8 py-4 text-sm font-bold tracking-widest text-black uppercase transition-colors duration-300 hover:bg-red-600 hover:text-white md:mt-0"
-          >
-            Contratar via PJ <FastForward size={16} aria-hidden="true" />
-          </a>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row md:mt-0">
+            <a
+              href="#contact"
+              className="interactive flex items-center justify-center gap-2 bg-white px-8 py-4 text-sm font-bold tracking-widest text-black uppercase transition-colors duration-300 hover:bg-red-600 hover:text-white"
+            >
+              Contratar Freelancer/CLT/PJ <FastForward size={16} aria-hidden="true" />
+            </a>
+            <CvDownloadGroup />
+          </div>
         </div>
 
         <div className="perspective-1000 grid grid-cols-1 gap-8 md:grid-cols-2">
@@ -76,7 +80,7 @@ export function CurrentProjects() {
                 <span
                   key={tool}
                   className={`rounded-full px-4 py-2 text-[10px] font-bold tracking-widest uppercase ${
-                    tool.includes("ElevenLabs") || tool.includes("ChatGPT")
+                    tool.includes("ElevenLabs") || tool.includes("Inteligência Artificial")
                       ? "border border-red-900/50 bg-black text-red-400"
                       : "bg-black text-zinc-300"
                   }`}

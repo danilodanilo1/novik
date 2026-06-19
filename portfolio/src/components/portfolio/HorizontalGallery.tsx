@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -18,12 +18,18 @@ gsap.registerPlugin(ScrollTrigger);
 
 const cases = cvContent.featuredWork;
 const caseCount = cases.length;
-const scrollTranslate = ((caseCount - 1) / caseCount) * 100;
+const baseScrollTranslate = ((caseCount - 1) / caseCount) * 100;
 
-/** Galeria horizontal termina em 26% · bala começa com último vídeo centralizado (~86%) · rasgo até ~35% */
+function getScrollTranslate(isMobile: boolean) {
+  const cardWidthVw = isMobile ? 85 : 60;
+  const centerOffset = (100 - cardWidthVw) / 2 / caseCount;
+  return baseScrollTranslate + centerOffset;
+}
+
+/** Galeria horizontal termina em 26% · rasgo até ~35% */
 const GALLERY_PHASE = 0.26;
-const TEAR_START = GALLERY_PHASE * 0.86;
-const TEAR_END = GALLERY_PHASE + 0.09;
+const TEAR_DURATION = 0.09;
+const TEAR_END = GALLERY_PHASE + TEAR_DURATION;
 
 export function HorizontalGallery() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -90,13 +96,15 @@ export function HorizontalGallery() {
           end: scrollDistance,
           pin: pin,
           scrub: 0.35,
-          anticipatePin: 1,
+          anticipatePin: 0,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
             const p = self.progress;
             const gamingScrollMax = getGamingScrollMax();
 
             const galleryProgress = Math.min(1, p / GALLERY_PHASE);
+
+            const scrollTranslate = getScrollTranslate(isMobile);
 
             gsap.set(galleryTrack, {
               x: `${-galleryProgress * scrollTranslate}%`,
@@ -121,22 +129,26 @@ export function HorizontalGallery() {
                 y: -clipsProgress * gamingScrollMax,
                 force3D: true,
               });
-            } else if (p >= TEAR_START) {
-              const tearProgress = Math.min(
-                1,
-                (p - TEAR_START) / (TEAR_END - TEAR_START),
-              );
-              applyBulletTear(
-                tearProgress,
-                overlay,
-                bulletWrap,
-                fireTrail,
-                fireCore,
-              );
-              gsap.set(gamingLayer, { y: 0, force3D: true });
             } else {
-              hideBulletTear(overlay, bulletWrap, fireTrail, fireCore);
-              gsap.set(gamingLayer, { y: 0, force3D: true });
+              const tearStart = isMobile ? GALLERY_PHASE : GALLERY_PHASE * 0.86;
+
+              if (p >= tearStart) {
+                const tearProgress = Math.min(
+                  1,
+                  (p - tearStart) / (TEAR_END - tearStart),
+                );
+                applyBulletTear(
+                  tearProgress,
+                  overlay,
+                  bulletWrap,
+                  fireTrail,
+                  fireCore,
+                );
+                gsap.set(gamingLayer, { y: 0, force3D: true });
+              } else {
+                hideBulletTear(overlay, bulletWrap, fireTrail, fireCore);
+                gsap.set(gamingLayer, { y: 0, force3D: true });
+              }
             }
           },
         });
@@ -152,14 +164,14 @@ export function HorizontalGallery() {
     <section
       ref={sectionRef}
       id="marcas-projetos"
-      className="relative z-20 bg-[#050505]"
+      className="relative z-20 bg-[#f5f5f7]"
       aria-label="Marcas, projetos e highlights eSports"
     >
       <div
         ref={pinRef}
-        className="relative h-screen w-full touch-pan-y overflow-hidden"
+        className="relative h-[100dvh] min-h-screen w-full touch-pan-y overflow-hidden bg-[#050505]"
       >
-        {/* Gaming clips — sempre por baixo, revelado pelo rasgo */}
+        {/* Gaming clips ÔÇö sempre por baixo, revelado pelo rasgo */}
         <div
           ref={gamingLayerRef}
           className="absolute top-0 left-0 z-0 w-full will-change-transform"
@@ -167,7 +179,7 @@ export function HorizontalGallery() {
           <GamingClipsSection embedded />
         </div>
 
-        {/* Overlay claro com galeria horizontal — rasgado pela bala */}
+        {/* Overlay claro com galeria horizontal ÔÇö rasgado pela bala */}
         <div
           ref={overlayRef}
           className="absolute inset-0 z-20 overflow-hidden bg-[#f5f5f7] will-change-[clip-path]"
@@ -186,7 +198,7 @@ export function HorizontalGallery() {
 
           <div
             ref={galleryTrackRef}
-            className="flex h-full items-center gap-16 px-[8vw] md:gap-20 md:px-[10vw]"
+            className="flex h-full items-center gap-16 pl-[7.5vw] pr-[7.5vw] md:gap-20 md:px-[10vw]"
             style={{
               width: `${caseCount * 100}vw`,
               willChange: "transform",
@@ -200,7 +212,7 @@ export function HorizontalGallery() {
                 <div className="relative h-[40vh] w-full overflow-hidden rounded-3xl bg-black shadow-2xl md:h-[70%] md:w-[60%]">
                   <Image
                     src={work.image}
-                    alt={`Projeto ${work.brand} — ${work.title}`}
+                    alt={`Projeto ${work.brand} ÔÇö ${work.title}`}
                     fill
                     sizes="(max-width: 768px) 85vw, 60vw"
                     className="object-cover opacity-60 mix-blend-luminosity"
@@ -249,7 +261,7 @@ export function HorizontalGallery() {
           </div>
         </div>
 
-        {/* Bala + fogo — só visível na fase de rasgo */}
+        {/* Bala + fogo ÔÇö s├│ vis├¡vel na fase de rasgo */}
         <div
           ref={fireTrailRef}
           className="bullet-fire-trail pointer-events-none absolute top-1/2 z-30 h-10 -translate-y-1/2 sm:h-14"
@@ -257,17 +269,17 @@ export function HorizontalGallery() {
         />
         <div
           ref={bulletWrapRef}
-          className="pointer-events-none absolute top-1/2 z-40 -translate-y-1/2 will-change-transform"
-          style={{ left: "108vw", ["--bullet-tip-offset" as string]: "10%" }}
+          className="pointer-events-none absolute top-1/2 z-40 h-0 w-0 -translate-y-1/2 will-change-transform"
+          style={{ left: "108vw" }}
         >
           <div
             ref={fireCoreRef}
-            className="bullet-fire-core absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2"
+            className="bullet-fire-core absolute top-1/2 -translate-x-1/2 -translate-y-1/2"
             aria-hidden="true"
           />
           <BulletSprite
             direction="left"
-            className="relative h-16 w-60 sm:h-20 sm:w-72 md:h-24 md:w-[22rem]"
+            className="absolute top-1/2 left-0 h-16 w-60 -translate-y-1/2 sm:h-20 sm:w-72 md:h-24 md:w-[22rem]"
           />
         </div>
       </div>

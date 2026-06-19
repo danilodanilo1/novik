@@ -1,6 +1,6 @@
 export const cvContent = {
   summary:
-    "Editor de vídeo com referência no cenário eSports brasileiro. Mais de cinco anos na W7M Gaming produzindo conteúdo para YouTube, Reels e campanhas de marcas como Netflix, Banco do Brasil, iFood e Mercado Livre. Hoje lidera pós-produção multilíngue com IA na Receitas Aprenda.",
+    "Editor de vídeo com referência no cenário eSports brasileiro. Mais de cinco anos na W7M Esports — canal com 60 mil+ inscritos — produzindo conteúdo para YouTube, Reels e campanhas de marcas como Netflix, Banco do Brasil, iFood e Mercado Livre. Hoje lidera pós-produção multilíngue com IA na Receitas Aprenda, canal culinário com mais de 2,1 milhões de inscritos.",
 
   role: "Editor de Vídeo · eSports & Campanhas",
 
@@ -13,23 +13,26 @@ export const cvContent = {
       role: "Editor de Vídeo",
       location: "São Paulo, SP",
       period: "Fev 2024 — Jun 2026",
+      audience: "2,1M+ inscritos no YouTube",
       description:
-        "Responsável pela edição de vídeos de receitas culinárias, criação de narrações com inteligência artificial via ElevenLabs e adaptação de conteúdo para cinco idiomas. Utiliza Adobe Premiere Pro e fluxos assistidos por ChatGPT para acelerar roteiro, tradução e pós-produção em escala.",
+        "Responsável pela edição de vídeos de receitas culinárias para um canal com mais de 2,1 milhões de inscritos. Criar narrações com inteligência artificial via ElevenLabs e adaptar conteúdo para cinco idiomas. Utilizando Adobe Premiere Pro e fluxos assistidos por Inteligência Artificial para acelerar roteiro, tradução e pós-produção em escala global.",
       highlights: [
-        "Edição de receitas para múltiplas plataformas",
+        "Canal com 2,1 milhões+ de inscritos no YouTube",
         "Narração sintética com ElevenLabs",
         "Localização em 5 idiomas",
       ],
-      tools: ["Adobe Premiere Pro", "ElevenLabs", "ChatGPT"],
+      tools: ["Adobe Premiere Pro", "ElevenLabs", "Inteligência Artificial"],
     },
     {
       company: "W7M Esports",
       role: "Editor de Vídeo",
       location: "São Paulo, SP",
       period: "Out 2018 — Out 2023",
+      audience: "60K+ inscritos no YouTube",
       description:
-        "Editor principal de conteúdos para YouTube, Reels e redes sociais da organização e de marcas parceiras. Atuou em campanhas publicitárias para Netflix, Banco do Brasil, iFood e Mercado Livre, além de cobertura de eventos, feiras gamer e produções para patrocinadores do cenário eSports.",
+        "Editor principal do canal oficial da organização — 60 mil+ inscritos — produzindo conteúdos para YouTube, Reels e redes sociais, além de marcas parceiras. Atuei em campanhas publicitárias para Netflix, Banco do Brasil, iFood e Mercado Livre, cobertura de eventos, feiras gamer e produções para patrocinadores do cenário eSports.",
       highlights: [
+        "Canal oficial com 60 mil+ inscritos",
         "Campanhas AAA com grandes marcas",
         "Highlights e fragmovies competitivos",
         "Cobertura de eventos e feiras gamer",
@@ -40,6 +43,20 @@ export const cvContent = {
         "Sony Vegas",
         "Adobe Photoshop",
       ],
+    },
+    {
+      company: "Novik Movies",
+      role: "Editor de Vídeo & Criador de Conteúdo",
+      location: "YouTube · Remoto",
+      period: "2013 — Out 2018",
+      description:
+        "Fundador e editor do canal Novik Movies (@novikmovies), com mais de 60 vídeos publicados e milhares de visualizações. Produziu fragmovies e edits de Counter-Strike sincronizando trilhas sonoras com tiros e highlights, criando conteúdo para jogadores profissionais como Fallenzão, Kscerato, kNgV e fnx, além de peças para times como MIBR.",
+      highlights: [
+        "60+ vídeos com milhares de visualizações",
+        "Fragmovies com sync preciso de música e tiros",
+        "Edits para jogadores e times profissionais de CS",
+      ],
+      tools: ["Sony Vegas", "Adobe After Effects", "YouTube"],
     },
   ],
 
@@ -83,7 +100,7 @@ export const cvContent = {
     {
       brand: "W7M ESPORTS",
       title: "O Coração do eSports",
-      desc: "Cinco anos definindo o padrão visual da organização: highlights, fragmovies, coberturas de eventos e conteúdo diário para YouTube e Reels — sempre com sync de áudio preciso e energia competitiva.",
+      desc: "Cinco anos definindo o padrão visual da organização — canal com 60 mil+ inscritos. Highlights, fragmovies, coberturas de eventos e conteúdo diário para YouTube e Reels, sempre com sync de áudio preciso e energia competitiva.",
       accent: "text-red-600",
       tag: "Gaming",
       image:
@@ -104,7 +121,7 @@ export const cvContent = {
     },
     {
       title: "Inteligência Artificial",
-      skills: ["ElevenLabs", "ChatGPT", "Narração com IA", "Localização"],
+      skills: ["ElevenLabs", "Inteligência Artificial", "Narração com IA", "Localização"],
     },
     {
       title: "Formatos & Plataformas",
@@ -125,7 +142,7 @@ export const cvContent = {
 
   availability: {
     roles: "Audiovisual",
-    contract: "Prestador de Serviços (PJ)",
+    contract: "CLT ou Prestador de Serviços (PJ)",
     schedule: "Período Integral",
   },
 
