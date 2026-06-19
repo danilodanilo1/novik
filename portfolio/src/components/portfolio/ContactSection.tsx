@@ -89,13 +89,26 @@ export function ContactSection() {
           </div>
         </address>
 
-        <footer className="mt-20 flex flex-col gap-4 border-t border-zinc-900 pt-10 text-sm text-zinc-600 md:flex-row md:items-center md:justify-between">
-          <p>
-            © {new Date().getFullYear()} {siteConfig.name}. Portfólio &
-            currículo profissional.
-          </p>
-          <p className="font-mono text-xs tracking-widest uppercase">
-            Premiere Pro · After Effects · Photoshop · Sony Vegas · ElevenLabs
+        <footer className="mt-20 flex flex-col gap-4 border-t border-zinc-900 pt-10 text-sm text-zinc-600">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <p>
+              © {new Date().getFullYear()} {siteConfig.name}. Portfólio &
+              currículo profissional.
+            </p>
+            <p className="font-mono text-xs tracking-widest uppercase">
+              Premiere Pro · After Effects · Photoshop · Sony Vegas · ElevenLabs
+            </p>
+          </div>
+          <p className="text-center text-xs text-zinc-500 md:text-left">
+            Desenvolvido por{" "}
+            <a
+              href="https://www.nascoliver.com.br"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="interactive font-medium text-zinc-400 transition-colors hover:text-red-500"
+            >
+              Nascoliver
+            </a>
           </p>
         </footer>
       </div>
