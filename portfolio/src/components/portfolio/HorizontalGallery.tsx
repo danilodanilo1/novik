@@ -26,10 +26,26 @@ function getScrollTranslate(isMobile: boolean) {
   return baseScrollTranslate + centerOffset;
 }
 
-/** Galeria horizontal termina em 26% · rasgo até ~35% */
-const GALLERY_PHASE = 0.26;
-const TEAR_DURATION = 0.09;
-const TEAR_END = GALLERY_PHASE + TEAR_DURATION;
+/** Scroll budget por fase — proporcional ao conteúdo real */
+function computeScrollPhases(
+  isMobile: boolean,
+  gamingScrollMax: number,
+  viewportH: number,
+) {
+  const galleryPx = viewportH * (isMobile ? 2.6 : 3.2);
+  const tearPx = viewportH * (isMobile ? 0.5 : 0.6);
+  const gamingPx = Math.max(
+    gamingScrollMax,
+    viewportH * (isMobile ? 2.0 : 2.4),
+  );
+  const totalPx = galleryPx + tearPx + gamingPx;
+
+  return {
+    scrollEndPx: totalPx,
+    galleryEnd: galleryPx / totalPx,
+    tearEnd: (galleryPx + tearPx) / totalPx,
+  };
+}
 
 export function HorizontalGallery() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -79,23 +95,27 @@ export function HorizontalGallery() {
 
     hideBulletTear(overlay, bulletWrap, fireTrail, fireCore);
 
-    let gamingScrollMax = Math.max(
-      0,
-      gamingLayer.scrollHeight - window.innerHeight,
-    );
+    const getPinHeight = () => pin.offsetHeight;
+    const getGamingScrollMax = () =>
+      Math.max(0, gamingLayer.scrollHeight - getPinHeight());
+
+    let gamingScrollMax = getGamingScrollMax();
 
     const setGalleryX = gsap.quickSetter(galleryTrack, "x", "%");
     const setBgTextX = gsap.quickSetter(bgText, "x", "%");
     const setGamingY = gsap.quickSetter(gamingLayer, "y", "px");
 
-    const refreshGamingScrollMax = () => {
-      gamingScrollMax = Math.max(
-        0,
-        gamingLayer.scrollHeight - window.innerHeight,
-      );
+    const refreshMetrics = () => {
+      const next = getGamingScrollMax();
+      const changed = Math.abs(next - gamingScrollMax) > 8;
+      gamingScrollMax = next;
+      if (changed) ScrollTrigger.refresh();
     };
 
-    window.addEventListener("load", refreshGamingScrollMax);
+    window.addEventListener("load", refreshMetrics);
+
+    const resizeObserver = new ResizeObserver(refreshMetrics);
+    resizeObserver.observe(gamingLayer);
 
     const mm = gsap.matchMedia();
 
@@ -103,59 +123,72 @@ export function HorizontalGallery() {
       { isMobile: "(max-width: 768px)", isDesktop: "(min-width: 769px)" },
       (context) => {
         const { isMobile } = context.conditions as { isMobile: boolean };
-        const scrollDistance = isMobile ? "+=340%" : "+=420%";
         const scrollTranslate = getScrollTranslate(isMobile);
 
         const st = ScrollTrigger.create({
           trigger: section,
           start: "top top",
-          end: scrollDistance,
+          end: () => {
+            refreshMetrics();
+            const phases = computeScrollPhases(
+              isMobile,
+              gamingScrollMax,
+              getPinHeight(),
+            );
+            return `+=${Math.round(phases.scrollEndPx)}`;
+          },
           pin: pin,
           scrub: true,
           anticipatePin: 1,
           fastScrollEnd: true,
           invalidateOnRefresh: true,
-          onRefresh: refreshGamingScrollMax,
+          onRefresh: refreshMetrics,
           onUpdate: (self) => {
+            const pinHeight = getPinHeight();
+            const phases = computeScrollPhases(
+              isMobile,
+              gamingScrollMax,
+              pinHeight,
+            );
             const p = self.progress;
 
-            const galleryProgress = Math.min(1, p / GALLERY_PHASE);
+            if (p <= phases.galleryEnd) {
+              const galleryProgress = p / phases.galleryEnd;
+              setGalleryX(-galleryProgress * scrollTranslate);
+              setBgTextX(-galleryProgress * 50);
+              hideBulletTear(overlay, bulletWrap, fireTrail, fireCore);
+              setGamingY(0);
+              return;
+            }
 
-            setGalleryX(-galleryProgress * scrollTranslate);
-            setBgTextX(-galleryProgress * 50);
+            if (p <= phases.tearEnd) {
+              setGalleryX(-scrollTranslate);
+              setBgTextX(-50);
 
-            if (p >= TEAR_END) {
-              hideBulletTear(
+              const tearSpan = phases.tearEnd - phases.galleryEnd;
+              const tearProgress = Math.min(
+                1,
+                (p - phases.galleryEnd) / tearSpan,
+              );
+              applyBulletTear(
+                tearProgress,
                 overlay,
                 bulletWrap,
                 fireTrail,
                 fireCore,
-                true,
               );
-
-              const clipsProgress = (p - TEAR_END) / (1 - TEAR_END);
-              setGamingY(-clipsProgress * gamingScrollMax);
-            } else {
-              const tearStart = isMobile ? GALLERY_PHASE : GALLERY_PHASE * 0.86;
-
-              if (p >= tearStart) {
-                const tearProgress = Math.min(
-                  1,
-                  (p - tearStart) / (TEAR_END - tearStart),
-                );
-                applyBulletTear(
-                  tearProgress,
-                  overlay,
-                  bulletWrap,
-                  fireTrail,
-                  fireCore,
-                );
-                setGamingY(0);
-              } else {
-                hideBulletTear(overlay, bulletWrap, fireTrail, fireCore);
-                setGamingY(0);
-              }
+              setGamingY(0);
+              return;
             }
+
+            hideBulletTear(overlay, bulletWrap, fireTrail, fireCore, true);
+
+            const clipsSpan = 1 - phases.tearEnd;
+            const clipsProgress = Math.min(
+              1,
+              (p - phases.tearEnd) / clipsSpan,
+            );
+            setGamingY(-clipsProgress * gamingScrollMax);
           },
         });
 
@@ -164,7 +197,8 @@ export function HorizontalGallery() {
     );
 
     return () => {
-      window.removeEventListener("load", refreshGamingScrollMax);
+      window.removeEventListener("load", refreshMetrics);
+      resizeObserver.disconnect();
       mm.revert();
     };
   }, []);
@@ -178,9 +212,9 @@ export function HorizontalGallery() {
     >
       <div
         ref={pinRef}
-        className="relative h-[100dvh] min-h-screen w-full touch-pan-y overflow-hidden bg-[#050505]"
+        className="relative h-[100svh] w-full touch-pan-y overflow-hidden bg-[#050505]"
       >
-        {/* Gaming clips ÔÇö sempre por baixo, revelado pelo rasgo */}
+        {/* Gaming clips — sempre por baixo, revelado pelo rasgo */}
         <div
           ref={gamingLayerRef}
           className="absolute top-0 left-0 z-0 w-full will-change-transform"
@@ -188,7 +222,7 @@ export function HorizontalGallery() {
           <GamingClipsSection embedded />
         </div>
 
-        {/* Overlay claro com galeria horizontal ÔÇö rasgado pela bala */}
+        {/* Overlay claro com galeria horizontal — rasgado pela bala */}
         <div
           ref={overlayRef}
           className="absolute inset-0 z-20 overflow-hidden bg-[#f5f5f7] will-change-[clip-path]"
@@ -221,7 +255,7 @@ export function HorizontalGallery() {
                 <div className="relative h-[40vh] w-full overflow-hidden rounded-3xl bg-black shadow-2xl md:h-[70%] md:w-[60%]">
                   <Image
                     src={work.image}
-                    alt={`Projeto ${work.brand} ÔÇö ${work.title}`}
+                    alt={`Projeto ${work.brand} — ${work.title}`}
                     fill
                     sizes="(max-width: 768px) 85vw, 60vw"
                     className="object-cover opacity-60 mix-blend-luminosity"
@@ -270,7 +304,7 @@ export function HorizontalGallery() {
           </div>
         </div>
 
-        {/* Bala + fogo ÔÇö s├│ vis├¡vel na fase de rasgo */}
+        {/* Bala + fogo — só visível na fase de rasgo */}
         <div
           ref={fireTrailRef}
           className="bullet-fire-trail pointer-events-none absolute top-1/2 z-30 h-10 -translate-y-1/2 sm:h-14"

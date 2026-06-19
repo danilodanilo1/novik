@@ -9,27 +9,6 @@ import { siteConfig } from "@/lib/site";
 
 gsap.registerPlugin(ScrollTrigger);
 
-function useViewportHeight() {
-  const [height, setHeight] = useState(800);
-
-  useEffect(() => {
-    const update = () => {
-      setHeight(window.visualViewport?.height ?? window.innerHeight);
-    };
-
-    update();
-    window.addEventListener("resize", update, { passive: true });
-    window.visualViewport?.addEventListener("resize", update, { passive: true });
-
-    return () => {
-      window.removeEventListener("resize", update);
-      window.visualViewport?.removeEventListener("resize", update);
-    };
-  }, []);
-
-  return height;
-}
-
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
@@ -42,7 +21,6 @@ export function HeroSection() {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [idleTilt, setIdleTilt] = useState({ x: 0, y: 0 });
   const [hasEntered, setHasEntered] = useState(false);
-  const viewportHeight = useViewportHeight();
 
   useEffect(() => {
     const enterTimer = window.setTimeout(() => setHasEntered(true), 80);
@@ -95,7 +73,7 @@ export function HeroSection() {
     });
 
     return () => st.kill();
-  }, [viewportHeight]);
+  }, []);
 
   useEffect(() => {
     if (!isTouchDevice) return;
@@ -153,8 +131,7 @@ export function HeroSection() {
   return (
     <section
       ref={sectionRef}
-      className="hero-scroll-track relative w-full bg-[#f5f5f7]"
-      style={{ height: `${viewportHeight * 2}px` }}
+      className="hero-scroll-track relative min-h-[200svh] w-full bg-[#f5f5f7]"
       aria-label="Apresentação"
     >
       <div className="sr-only">
@@ -170,8 +147,7 @@ export function HeroSection() {
 
       <div
         ref={stickyRef}
-        className={`hero-sticky perspective-1000 sticky top-0 flex w-full touch-pan-y items-center justify-center overflow-hidden bg-zinc-950 ${isTouchDevice ? "hero--touch" : ""}`}
-        style={{ height: `${viewportHeight}px` }}
+        className={`hero-sticky perspective-1000 sticky top-0 flex h-[100svh] w-full touch-pan-y items-center justify-center overflow-hidden bg-zinc-950 ${isTouchDevice ? "hero--touch" : ""}`}
         onMouseMove={handleMouseMove}
         onTouchMove={handleTouchMove}
       >

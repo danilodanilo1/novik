@@ -17,10 +17,10 @@ export function CurrentProjects() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry) return;
-        const { top, isIntersecting } = entry.boundingClientRect;
+        const { top } = entry.boundingClientRect;
         const windowHeight = window.innerHeight;
 
-        if (isIntersecting && top < windowHeight * 0.6 && top > 0) {
+        if (entry.isIntersecting && top < windowHeight * 0.6 && top > 0) {
           setIsFlashing(Math.floor(top) % 60 < 10);
         } else {
           setIsFlashing(false);
