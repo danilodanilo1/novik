@@ -2,10 +2,9 @@
 
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Play } from "lucide-react";
-import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { BulletSprite } from "@/components/portfolio/BulletSprite";
+import { FeaturedWorkMedia } from "@/components/portfolio/FeaturedWorkMedia";
 import { GamingClipsSection } from "@/components/portfolio/GamingClipsSection";
 import {
   applyBulletTear,
@@ -249,36 +248,11 @@ export function HorizontalGallery() {
           >
             {cases.map((work, idx) => (
               <article
-                key={work.brand}
+                key={work.video}
                 className="interactive group flex h-[80vh] w-[85vw] shrink-0 flex-col items-center gap-10 md:w-[60vw] md:flex-row md:gap-12"
               >
                 <div className="relative h-[40vh] w-full overflow-hidden rounded-3xl bg-black shadow-2xl md:h-[70%] md:w-[60%]">
-                  <Image
-                    src={work.image}
-                    alt={`Projeto ${work.brand} — ${work.title}`}
-                    fill
-                    sizes="(max-width: 768px) 85vw, 60vw"
-                    className="object-cover opacity-60 mix-blend-luminosity"
-                    loading={idx === 0 ? "eager" : "lazy"}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-white/20 shadow-[0_0_30px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all duration-300 group-hover:scale-110 group-hover:bg-white/30">
-                      <Play
-                        className="ml-2 text-white drop-shadow-lg"
-                        fill="currentColor"
-                        size={32}
-                        aria-hidden="true"
-                      />
-                    </div>
-                  </div>
-                  <div className="absolute bottom-6 left-6 flex gap-3">
-                    <span className="rounded-full bg-black/40 px-4 py-1.5 text-[10px] font-bold tracking-widest text-white uppercase backdrop-blur-md">
-                      Campanha
-                    </span>
-                    <span className="rounded-full bg-white/20 px-4 py-1.5 text-[10px] font-bold tracking-widest text-white uppercase backdrop-blur-md">
-                      {work.tag}
-                    </span>
-                  </div>
+                  <FeaturedWorkMedia work={work} priority={idx === 0} />
                 </div>
 
                 <div className="flex w-full flex-col justify-center text-black md:w-[40%]">

@@ -39,11 +39,6 @@ export function CurrentProjects() {
       className={`relative z-10 w-full px-6 py-32 transition-colors duration-75 md:px-20 ${isFlashing ? "bg-zinc-900" : "bg-[#050505]"}`}
       aria-label="Projeto atual e diferenciais"
     >
-      <div className="absolute top-10 right-10 flex animate-pulse items-center gap-2 font-mono text-[10px] tracking-widest text-zinc-500">
-        <div className="h-2 w-2 rounded-full bg-red-600" aria-hidden="true" />
-        PROJETO ATUAL · {currentJob.period}
-      </div>
-
       <div className="mx-auto max-w-7xl">
         <div className="mb-20 flex flex-col items-end justify-between border-b border-zinc-800 pb-10 md:flex-row">
           <div>

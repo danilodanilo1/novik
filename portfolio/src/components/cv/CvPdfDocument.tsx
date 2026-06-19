@@ -72,7 +72,7 @@ function JobEntry({ job, s }: { job: Experience; s: CvPdfStyles }) {
 
 export function CvPdfDocument({ theme = "dark" }: CvPdfDocumentProps) {
   const s = createCvPdfStyles(theme);
-  const brands = cvContent.featuredWork.map((item) => item.brand);
+  const brands = [...new Set(cvContent.featuredWork.map((item) => item.brand))];
   const [receitas, w7m, novik] = cvContent.experience;
 
   return (
@@ -112,7 +112,7 @@ export function CvPdfDocument({ theme = "dark" }: CvPdfDocumentProps) {
           <View style={s.statsRow}>
             <View style={s.statBox}>
               <Text style={s.statValue}>2,1M+</Text>
-              <Text style={s.statLabel}>Inscritos · Receitas Aprenda</Text>
+              <Text style={s.statLabel}>Inscritos · @ReceitasAprenda</Text>
             </View>
             <View style={s.statBox}>
               <Text style={s.statValue}>60K+</Text>

@@ -1,6 +1,6 @@
 export const cvContent = {
   summary:
-    "Editor de vídeo com referência no cenário eSports brasileiro. Mais de cinco anos na W7M Esports — canal com 60 mil+ inscritos — produzindo conteúdo para YouTube, Reels e campanhas de marcas como Netflix, Banco do Brasil, iFood e Mercado Livre. Hoje lidera pós-produção multilíngue com IA na Receitas Aprenda, canal culinário com mais de 2,1 milhões de inscritos.",
+    "Editor de vídeo com referência no cenário eSports brasileiro. Mais de cinco anos na W7M Esports — canal com 60 mil+ inscritos — produzindo conteúdo para YouTube, Reels e campanhas de marcas como Netflix, Banco do Brasil, iFood e Mercado Livre. Hoje lidera pós-produção multilíngue com IA na @ReceitasAprenda, canal culinário com mais de 2,1 milhões de inscritos.",
 
   role: "Editor de Vídeo · eSports & Campanhas",
 
@@ -63,48 +63,48 @@ export const cvContent = {
   featuredWork: [
     {
       brand: "NETFLIX",
-      title: "Campanhas Promocionais",
-      desc: "Edição de peças promocionais dentro de campanhas publicitárias da W7M, traduzindo a linguagem cinematográfica da marca para formatos dinâmicos de YouTube e Reels sem perder impacto visual.",
+      title: "Filme Power",
+      desc: "Peça promocional da parceria W7M × Netflix para o lançamento do filme Power — linguagem cinematográfica traduzida para o ritmo e a retenção do YouTube.",
       accent: "text-[#E50914]",
       tag: "Streaming",
-      image:
-        "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=2069&auto=format&fit=crop",
+      image: "/videos/thumbs/netflix-filme-power.jpg",
+      video: "/videos/netflix-filme-power.mp4",
     },
     {
       brand: "BANCO DO BRASIL",
-      title: "Institucional Moderno",
-      desc: "Produção audiovisual para campanhas institucionais, conectando a credibilidade de uma das maiores instituições financeiras do país a um público jovem e digital com edição ágil e narrativa clara.",
+      title: "Gaules × BB",
+      desc: "Vídeo da campanha institucional com Gaules: tom jovem e digital sem perder a credibilidade da marca, pensado para engajar o público gamer e de streams.",
       accent: "text-[#F9ED32]",
       tag: "Institucional",
-      image:
-        "https://images.unsplash.com/photo-1616803140344-6682afb13cda?q=80&w=2070&auto=format&fit=crop",
-    },
-    {
-      brand: "IFOOD",
-      title: "Marcas Parceiras",
-      desc: "Conteúdo editado para campanhas de patrocínio e ativações de marca no ecossistema eSports, integrando produto, lifestyle e entretenimento em vídeos de alta retenção para redes sociais.",
-      accent: "text-[#EA1D2C]",
-      tag: "Patrocínio",
-      image:
-        "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop",
-    },
-    {
-      brand: "MERCADO LIVRE",
-      title: "Ativações Digitais",
-      desc: "Edição de vídeos para campanhas e ações promocionais com marcas parceiras da W7M, com foco em engajamento, clareza de mensagem e ritmo pensado para plataformas verticais e horizontais.",
-      accent: "text-[#FFE600]",
-      tag: "E-commerce",
-      image:
-        "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=2070&auto=format&fit=crop",
+      image: "/videos/thumbs/banco-do-brasil-gaules.jpg",
+      video: "/videos/banco-do-brasil-gaules.mp4",
     },
     {
       brand: "W7M ESPORTS",
-      title: "O Coração do eSports",
-      desc: "Cinco anos definindo o padrão visual da organização — canal com 60 mil+ inscritos. Highlights, fragmovies, coberturas de eventos e conteúdo diário para YouTube e Reels, sempre com sync de áudio preciso e energia competitiva.",
+      title: "O Hype Continua",
+      desc: "Vídeo de hype para o canal da organização — cortes rápidos, energia competitiva e narrativa que sustenta a comunidade entre jogos e temporadas.",
       accent: "text-red-600",
-      tag: "Gaming",
-      image:
-        "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop",
+      tag: "Hype",
+      image: "/videos/thumbs/o-hype-continua.jpg",
+      video: "/videos/o-hype-continua.mp4",
+    },
+    {
+      brand: "W7M ESPORTS",
+      title: "Rumo ao Major",
+      desc: "Edit de CS:GO sobre a jornada da equipe até o Major no Rio — sync de áudio, storytelling de competição e clima de esports em cada corte.",
+      accent: "text-red-600",
+      tag: "CS:GO",
+      image: "/videos/thumbs/caminho-do-major.jpg",
+      video: "/videos/caminho-do-major.mp4",
+    },
+    {
+      brand: "VEX DRAGONS",
+      title: "Loja Oficial",
+      desc: "Conteúdo de ativação da loja oficial do patrocinador Vex Dragons no ecossistema W7M — produto, branding e entretenimento em formato dinâmico para YouTube.",
+      accent: "text-violet-400",
+      tag: "Patrocínio",
+      image: "/videos/thumbs/loja-vex-dragons.jpg",
+      video: "/videos/loja-vex-dragons.mp4",
     },
   ],
 

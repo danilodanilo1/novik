@@ -26,7 +26,7 @@ export function AboutSection() {
 
         <div className="mt-12 flex flex-wrap gap-3">
           {[
-            "2,1M+ inscritos · Receitas Aprenda",
+            "2,1M+ inscritos · @ReceitasAprenda",
             "W7M · 60K+ inscritos",
             "Netflix · BB · iFood · Mercado Livre",
             "IA & 5 idiomas",
