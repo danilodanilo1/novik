@@ -25,7 +25,7 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
     const touch = isTouchDevice();
 
     const lenis = new Lenis({
-      lerp: touch ? 0.12 : 0.1,
+      lerp: touch ? 0.12 : 0.14,
       smoothWheel: !touch,
       syncTouch: touch,
       syncTouchLerp: 0.085,

@@ -1,7 +1,12 @@
 import gsap from "gsap";
 
+/** Meia-abertura do V em % — braços estreitos na ponta da bala. */
 const TEAR_HALF = 2.8;
-const BULLET_PHASE = 0.88;
+
+/** Progresso do rasgo (0–1): fim do percurso horizontal da bala. */
+export const TRAVEL_END = 0.48;
+/** Bala totalmente invisível — só depois disso o rasgo abre sozinho. */
+export const BULLET_GONE = 0.56;
 
 /**
  * Onde a ponta prata está dentro do sprite (% da largura da bala).
@@ -12,99 +17,89 @@ export const METALLIC_TIP_RATIO = 0.15;
 /** Centro do fogo — atrás da ponta, para a direita (% da largura da bala). */
 export const FIRE_BEHIND_TIP_RATIO = 0.2;
 
-/** Largura do `<` na ponta (% da largura da bala). Braços abrem para a direita (atrás da bala). */
-export const TEAR_CHEVRON_RATIO = 0.028;
-
 function bulletWidthVw(bulletWrap: HTMLElement): number {
   const sprite = bulletWrap.querySelector(".bullet-sprite-crop--left");
   if (!sprite) return 15;
   return (sprite.getBoundingClientRect().width / window.innerWidth) * 100;
 }
 
-function buildHorizontalJaggedEdge(
-  xStart: number,
-  yStart: number,
-  xEnd: number,
-  yEnd: number,
+function buildJaggedSegment(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
   steps: number,
   skipFirst = false,
 ): string[] {
   const points: string[] = [];
 
   for (let i = skipFirst ? 1 : 0; i <= steps; i++) {
-    const t = i / steps;
-    const x = xStart + (xEnd - xStart) * t;
-    const y = yStart + (yEnd - yStart) * t;
-    const jag = Math.sin(i * 2.7) * 0.35 + Math.cos(i * 1.8) * 0.22;
-    points.push(`${x + jag * 0.15}vw ${y + jag}%`);
+    const s = i / steps;
+    const x = x1 + (x2 - x1) * s;
+    const y = y1 + (y2 - y1) * s;
+    const jag = Math.sin(i * 2.4) * 0.5 + Math.cos(i * 1.6) * 0.35;
+    points.push(`${x + jag}vw ${y}%`);
   }
 
   return points;
 }
 
-function corridorTop(x: number, tipX: number, releaseT: number): number {
-  const span = Math.max(1, 100 - tipX);
-  const open = Math.min(1, Math.max(0, (x - tipX) / span));
-  const eased = 1 - Math.pow(1 - open, 1.35);
-  const slitHalf = TEAR_HALF * (1 - releaseT);
-  return (50 - slitHalf) * (1 - eased) * (1 - releaseT);
+function easeOut(u: number, power = 1.35): number {
+  return 1 - Math.pow(1 - u, power);
 }
 
-function corridorBottom(x: number, tipX: number, releaseT: number): number {
-  return 100 - corridorTop(x, tipX, releaseT);
+/** Clip-path que não desenha overlay nenhum (rasgo 100% aberto). */
+export function buildFullyOpenClipPath(): string {
+  return "polygon(0% 50%, 0% 50%, 0% 50%)";
 }
 
-/** Overlay branco: tudo à esquerda da ponta + faixas em cima/baixo à direita. */
-export function buildTearClipPath(
-  tipXVw: number,
-  releaseT = 0,
-  tipArmVw = 0.6,
-): string {
-  if (tipXVw >= 105 && releaseT <= 0) {
+/** Overlay claro: V na ponta; braços até a borda direita. */
+export function buildTearClipPath(tipXVw: number, spread = TEAR_HALF): string {
+  if (tipXVw >= 105 && spread <= TEAR_HALF + 0.01) {
     return "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)";
   }
-  if (releaseT >= 0.999) {
-    return "polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)";
-  }
 
-  const tipX = Math.min(tipXVw, 100);
-  const armX = Math.min(100, tipX + tipArmVw);
-  const yTopArm = corridorTop(armX, tipX, releaseT);
-  const yBottomArm = corridorBottom(armX, tipX, releaseT);
-  const yTopRight = corridorTop(100, tipX, releaseT);
-  const yBottomRight = corridorBottom(100, tipX, releaseT);
+  const yTop = 50 - spread;
+  const yBot = 50 + spread;
 
-  const topEdge = buildHorizontalJaggedEdge(
-    100,
-    yTopRight,
-    armX,
-    yTopArm,
-    8,
-    false,
-  );
-  const bottomEdge = buildHorizontalJaggedEdge(
-    armX,
-    yBottomArm,
-    100,
-    yBottomRight,
-    8,
-    true,
-  );
+  const topArm = buildJaggedSegment(100, yTop, tipXVw, 50, 8, true);
+  const bottomArm = buildJaggedSegment(tipXVw, 50, 100, yBot, 8, true);
 
-  // `<` apontando para a esquerda: vértice na ponta, braços para trás (direita).
   const points = [
     "0% 0%",
     "100% 0%",
-    ...topEdge,
-    `${armX}vw ${yTopArm}%`,
-    `${tipX}vw 50%`,
-    `${armX}vw ${yBottomArm}%`,
-    ...bottomEdge,
+    `100% ${yTop}%`,
+    ...topArm,
+    ...bottomArm,
+    `100% ${yBot}%`,
     "100% 100%",
     "0% 100%",
   ];
 
   return `polygon(${points.join(", ")})`;
+}
+
+/** Abertura só para frente: vertical → ápice desliza para a esquerda. */
+function widenGeometry(openT: number, apexAtTravelEnd: number) {
+  if (openT <= 0) {
+    return { spread: TEAR_HALF, apexX: apexAtTravelEnd };
+  }
+
+  const VERT_PHASE = 0.7;
+
+  if (openT < VERT_PHASE) {
+    const u = openT / VERT_PHASE;
+    return {
+      spread: TEAR_HALF + easeOut(u) * (50 - TEAR_HALF),
+      apexX: apexAtTravelEnd,
+    };
+  }
+
+  const tailU = (openT - VERT_PHASE) / (1 - VERT_PHASE);
+  return {
+    spread: 50,
+    apexX: apexAtTravelEnd - easeOut(tailU) * 115,
+  };
 }
 
 function fireTrailOpacity(progress: number): number {
@@ -118,62 +113,104 @@ function fireTrailOpacity(progress: number): number {
   return fadeIn * fadeOut * flicker;
 }
 
-export function applyBulletTear(
+function hideBulletVisuals(
+  bulletWrap: HTMLElement,
+  fireTrail: HTMLElement,
+  fireCore: HTMLElement,
+) {
+  gsap.set(bulletWrap, { opacity: 0, force3D: true });
+  gsap.set(fireTrail, { opacity: 0, width: 0 });
+  gsap.set(fireCore, { opacity: 0, scale: 1 });
+}
+
+/**
+ * Rasgo contínuo:
+ * 1. Bala percorre com V estreito na ponta
+ * 2. Bala some
+ * 3. Rasgo abre verticalmente, depois o ápice avança — só abre, nunca fecha
+ */
+export function applyTearAnimation(
   tearProgress: number,
   overlay: HTMLElement,
   bulletWrap: HTMLElement,
   fireTrail: HTMLElement,
   fireCore: HTMLElement,
-) {
-  const bulletT = Math.min(1, tearProgress / BULLET_PHASE);
-  const releaseT =
-    tearProgress <= BULLET_PHASE
-      ? 0
-      : (tearProgress - BULLET_PHASE) / (1 - BULLET_PHASE);
-
+): number {
+  const p = Math.min(1, Math.max(0, tearProgress));
   const widthVw = bulletWidthVw(bulletWrap);
-  const travelEndVw = 108 - 125;
-  const exitVw = -(widthVw + 1.5);
-  const baseTrackVw = 108 - bulletT * 125;
-  const trackVw =
-    releaseT > 0
-      ? travelEndVw + (exitVw - travelEndVw) * releaseT
-      : baseTrackVw;
 
-  const bulletVisible = trackVw + widthVw > 0;
+  const travelT = Math.min(1, p / TRAVEL_END);
+  const trackVw = p <= TRAVEL_END ? 108 - travelT * 125 : 108 - 125;
+  const tipXVw = trackVw + widthVw * METALLIC_TIP_RATIO;
+  const apexAtTravelEnd = 108 - 125 + widthVw * METALLIC_TIP_RATIO;
 
-  gsap.set(bulletWrap, {
-    left: `${trackVw}vw`,
-    opacity: bulletVisible ? 1 : 0,
-    force3D: true,
-  });
+  const widenU =
+    p <= BULLET_GONE ? 0 : (p - BULLET_GONE) / (1 - BULLET_GONE);
+  const openT = widenU <= 0 ? 0 : easeOut(widenU);
 
-  const tearXVw = trackVw + widthVw * METALLIC_TIP_RATIO;
-  const fireXVw = trackVw + widthVw * FIRE_BEHIND_TIP_RATIO;
-  const chevronArmVw = widthVw * TEAR_CHEVRON_RATIO;
+  const clipPath =
+    p <= BULLET_GONE
+      ? buildTearClipPath(tipXVw, TEAR_HALF)
+      : (() => {
+          const { spread, apexX } = widenGeometry(openT, apexAtTravelEnd);
+          return buildTearClipPath(apexX, spread);
+        })();
 
-  overlay.style.clipPath = buildTearClipPath(
-    releaseT > 0 ? Math.min(tearXVw, -4) : tearXVw,
-    releaseT,
-    chevronArmVw,
-  );
+  overlay.style.clipPath = clipPath;
+  gsap.set(overlay, { opacity: 1, visibility: "visible" });
 
-  const trailOpacity = bulletVisible ? fireTrailOpacity(bulletT) : 0;
-  const rawTrailWidth = Math.max(0, 108 - fireXVw);
-  const trailShrink =
-    bulletT > 0.5 ? 1 - Math.pow((bulletT - 0.5) / 0.5, 1.2) * 0.35 : 1;
+  let bulletOpacity = 1;
+  const fireT = travelT;
+  if (p > BULLET_GONE) {
+    bulletOpacity = 0;
+  } else if (p > TRAVEL_END) {
+    bulletOpacity = 1 - (p - TRAVEL_END) / (BULLET_GONE - TRAVEL_END);
+  }
 
-  gsap.set(fireTrail, {
-    left: `${fireXVw}vw`,
-    width: `${rawTrailWidth * trailShrink}vw`,
-    opacity: trailOpacity * 0.92,
-    force3D: true,
-  });
+  if (bulletOpacity <= 0) {
+    hideBulletVisuals(bulletWrap, fireTrail, fireCore);
+  } else {
+    gsap.set(bulletWrap, {
+      left: `${trackVw}vw`,
+      opacity: bulletOpacity,
+      force3D: true,
+    });
 
-  gsap.set(fireCore, {
-    left: `${fireXVw - trackVw}vw`,
-    opacity: trailOpacity,
-    scale: 0.85 + trailOpacity * 0.2,
+    const fireXVw = trackVw + widthVw * FIRE_BEHIND_TIP_RATIO;
+    const trailOpacity = fireTrailOpacity(fireT) * bulletOpacity;
+    const rawTrailWidth = Math.max(0, 108 - fireXVw);
+    const trailShrink =
+      fireT > 0.5 ? 1 - Math.pow((fireT - 0.5) / 0.5, 1.2) * 0.35 : 1;
+
+    gsap.set(fireTrail, {
+      left: `${fireXVw}vw`,
+      width: `${rawTrailWidth * trailShrink}vw`,
+      opacity: trailOpacity * 0.92,
+      force3D: true,
+    });
+
+    gsap.set(fireCore, {
+      left: `${fireXVw - trackVw}vw`,
+      opacity: trailOpacity,
+      scale: 0.85 + trailOpacity * 0.2,
+    });
+  }
+
+  return apexAtTravelEnd;
+}
+
+/** Rasgo 100% aberto — pronto para a seção gaming rolar. */
+export function finishTearOpen(
+  overlay: HTMLElement,
+  bulletWrap: HTMLElement,
+  fireTrail: HTMLElement,
+  fireCore: HTMLElement,
+) {
+  hideBulletVisuals(bulletWrap, fireTrail, fireCore);
+  gsap.set(overlay, {
+    opacity: 1,
+    visibility: "hidden",
+    clipPath: buildFullyOpenClipPath(),
   });
 }
 
@@ -187,7 +224,9 @@ export function hideBulletTear(
   gsap.set(bulletWrap, { left: "108vw", opacity: 0, force3D: true });
   gsap.set(fireTrail, { opacity: 0, width: 0 });
   gsap.set(fireCore, { opacity: 0, scale: 1 });
-  overlay.style.clipPath = fullyOpen
-    ? buildTearClipPath(-5, 1)
-    : buildTearClipPath(108);
+  gsap.set(overlay, {
+    opacity: 1,
+    visibility: fullyOpen ? "hidden" : "visible",
+    clipPath: fullyOpen ? buildFullyOpenClipPath() : buildTearClipPath(108),
+  });
 }

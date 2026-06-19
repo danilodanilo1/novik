@@ -7,8 +7,10 @@ import { BulletSprite } from "@/components/portfolio/BulletSprite";
 import { FeaturedWorkMedia } from "@/components/portfolio/FeaturedWorkMedia";
 import { GamingClipsSection } from "@/components/portfolio/GamingClipsSection";
 import {
-  applyBulletTear,
+  applyTearAnimation,
   buildTearClipPath,
+  BULLET_GONE,
+  finishTearOpen,
   hideBulletTear,
 } from "@/lib/bullet-tear";
 import { cvContent } from "@/lib/cv-content";
@@ -51,8 +53,10 @@ function computeScrollPhases(
   gamingScrollMax: number,
   viewportH: number,
 ) {
-  const galleryPx = viewportH * 2.6;
-  const tearPx = viewportH * (isMobile ? 0.5 : 0.6);
+  const galleryPx = viewportH * (isMobile ? 2.6 : 3.2);
+  const tearTravelPx = viewportH * (isMobile ? 0.55 : 0.65);
+  const tearWidenPx = viewportH * (isMobile ? 1.15 : 1.45);
+  const tearPx = tearTravelPx + tearWidenPx;
   const gamingPx = Math.max(
     gamingScrollMax,
     viewportH * (isMobile ? 2.0 : 2.4),
@@ -62,6 +66,7 @@ function computeScrollPhases(
   return {
     scrollEndPx: totalPx,
     galleryEnd: galleryPx / totalPx,
+    tearTravelEnd: (galleryPx + tearTravelPx) / totalPx,
     tearEnd: (galleryPx + tearPx) / totalPx,
   };
 }
@@ -125,23 +130,37 @@ export function HorizontalGallery() {
     const setBgTextX = gsap.quickSetter(bgText, "x", "%");
     const setGamingY = gsap.quickSetter(gamingLayer, "y", "px");
 
-    const refreshMetrics = () => {
+    const syncGalleryBounds = () => {
       galleryBounds = measureGalleryBounds(galleryTrack, pin);
-      const next = getGamingScrollMax();
-      const changed = Math.abs(next - gamingScrollMax) > 8;
-      gamingScrollMax = next;
-      if (changed) ScrollTrigger.refresh();
+      setGalleryX(galleryBounds.startX);
     };
 
-    window.addEventListener("load", refreshMetrics);
+    let refreshRaf = 0;
+    const schedulePinRefresh = () => {
+      cancelAnimationFrame(refreshRaf);
+      refreshRaf = requestAnimationFrame(() => {
+        gamingScrollMax = getGamingScrollMax();
+        syncGalleryBounds();
+        ScrollTrigger.refresh();
+      });
+    };
 
-    const resizeObserver = new ResizeObserver(refreshMetrics);
+    const refreshGamingScrollMax = () => {
+      const next = getGamingScrollMax();
+      if (Math.abs(next - gamingScrollMax) > 8) {
+        gamingScrollMax = next;
+        schedulePinRefresh();
+      }
+    };
+
+    syncGalleryBounds();
+    window.addEventListener("load", schedulePinRefresh);
+
+    const resizeObserver = new ResizeObserver(refreshGamingScrollMax);
     resizeObserver.observe(gamingLayer);
-    resizeObserver.observe(galleryTrack);
 
-    requestAnimationFrame(() => {
-      galleryBounds = measureGalleryBounds(galleryTrack, pin);
-    });
+    const onViewportResize = () => schedulePinRefresh();
+    window.addEventListener("resize", onViewportResize);
 
     const mm = gsap.matchMedia();
 
@@ -154,7 +173,6 @@ export function HorizontalGallery() {
           trigger: section,
           start: "top top",
           end: () => {
-            refreshMetrics();
             const phases = computeScrollPhases(
               isMobile,
               gamingScrollMax,
@@ -167,7 +185,9 @@ export function HorizontalGallery() {
           anticipatePin: 1,
           fastScrollEnd: true,
           invalidateOnRefresh: true,
-          onRefresh: refreshMetrics,
+          onRefresh: () => {
+            gamingScrollMax = getGamingScrollMax();
+          },
           onUpdate: (self) => {
             const pinHeight = getPinHeight();
             const phases = computeScrollPhases(
@@ -192,12 +212,18 @@ export function HorizontalGallery() {
               setGalleryX(endX);
               setBgTextX(-50);
 
-              const tearSpan = phases.tearEnd - phases.galleryEnd;
-              const tearProgress = Math.min(
-                1,
-                (p - phases.galleryEnd) / tearSpan,
-              );
-              applyBulletTear(
+              let tearProgress: number;
+              if (p <= phases.tearTravelEnd) {
+                const travelSpan = phases.tearTravelEnd - phases.galleryEnd;
+                const travelU = (p - phases.galleryEnd) / travelSpan;
+                tearProgress = travelU * BULLET_GONE;
+              } else {
+                const widenSpan = phases.tearEnd - phases.tearTravelEnd;
+                const widenU = (p - phases.tearTravelEnd) / widenSpan;
+                tearProgress = BULLET_GONE + widenU * (1 - BULLET_GONE);
+              }
+
+              applyTearAnimation(
                 tearProgress,
                 overlay,
                 bulletWrap,
@@ -208,7 +234,7 @@ export function HorizontalGallery() {
               return;
             }
 
-            hideBulletTear(overlay, bulletWrap, fireTrail, fireCore, true);
+            finishTearOpen(overlay, bulletWrap, fireTrail, fireCore);
 
             const clipsSpan = 1 - phases.tearEnd;
             const clipsProgress = Math.min(
@@ -224,7 +250,9 @@ export function HorizontalGallery() {
     );
 
     return () => {
-      window.removeEventListener("load", refreshMetrics);
+      cancelAnimationFrame(refreshRaf);
+      window.removeEventListener("load", schedulePinRefresh);
+      window.removeEventListener("resize", onViewportResize);
       resizeObserver.disconnect();
       mm.revert();
     };
@@ -306,15 +334,15 @@ export function HorizontalGallery() {
           </div>
         </div>
 
-        {/* Bala + fogo — só visível na fase de rasgo */}
+        {/* Bala + fogo — acima do overlay rasgado */}
         <div
           ref={fireTrailRef}
-          className="bullet-fire-trail pointer-events-none absolute top-1/2 z-30 h-10 -translate-y-1/2 sm:h-14"
+          className="bullet-fire-trail pointer-events-none absolute top-1/2 z-[45] h-10 -translate-y-1/2 sm:h-14"
           style={{ left: "108vw", width: 0, opacity: 0 }}
         />
         <div
           ref={bulletWrapRef}
-          className="pointer-events-none absolute top-1/2 z-40 h-0 w-0 -translate-y-1/2 will-change-transform"
+          className="pointer-events-none absolute top-1/2 z-50 h-0 w-0 -translate-y-1/2 will-change-transform"
           style={{ left: "108vw" }}
         >
           <div
