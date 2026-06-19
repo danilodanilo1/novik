@@ -417,7 +417,7 @@ const CurrentProjects = () => {
             <h3 className="text-3xl font-bold text-white mb-4">A.I. Workflow & Receitas</h3>
             <p className="text-zinc-400 mb-8 text-lg leading-relaxed">
               Liderando a pós-produção de canais de culinária com tradução e adaptação simultânea para 5 idiomas. 
-              Implementação de fluxos de trabalho com ferramentas de IA (ElevenLabs, ChatGPT) para narração realista e escala global.
+              Implementação de fluxos de trabalho com ferramentas de IA ElevenLabs para narração realista e escala global.
             </p>
             <div className="flex gap-3 flex-wrap">
               <span className="px-4 py-2 bg-black text-[10px] text-zinc-300 uppercase font-bold tracking-widest rounded-full">Premiere Pro</span>

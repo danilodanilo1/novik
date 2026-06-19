@@ -1,9 +1,13 @@
 "use client";
 
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ChevronDown } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cvContent } from "@/lib/cv-content";
 import { siteConfig } from "@/lib/site";
+
+gsap.registerPlugin(ScrollTrigger);
 
 function useViewportHeight() {
   const [height, setHeight] = useState(800);
@@ -28,8 +32,13 @@ function useViewportHeight() {
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
+  const zoomLayerRef = useRef<HTMLDivElement>(null);
+  const hintRef = useRef<HTMLDivElement>(null);
+  const tiltLayerRef = useRef<HTMLDivElement>(null);
+  const zoomProgressRef = useRef(0);
+
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const [zoomProgress, setZoomProgress] = useState(0);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [idleTilt, setIdleTilt] = useState({ x: 0, y: 0 });
   const [hasEntered, setHasEntered] = useState(false);
@@ -42,39 +51,64 @@ export function HeroSection() {
 
   useEffect(() => {
     setIsTouchDevice(window.matchMedia("(pointer: coarse)").matches);
+  }, []);
 
-    const handleScroll = () => {
-      if (!sectionRef.current) return;
+  useEffect(() => {
+    const section = sectionRef.current;
+    const stickyEl = stickyRef.current;
+    const zoomLayer = zoomLayerRef.current;
+    const hintEl = hintRef.current;
 
-      const { top, height } = sectionRef.current.getBoundingClientRect();
-      const scrollableDistance = height - viewportHeight;
+    if (!section || !stickyEl || !zoomLayer || !hintEl) return;
 
-      if (scrollableDistance <= 0) return;
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
-      const scrolled = -top;
-      const progress = Math.max(0, Math.min(1, scrolled / scrollableDistance));
-      setZoomProgress(progress);
-    };
+    if (reducedMotion) return;
 
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.visualViewport?.addEventListener("scroll", handleScroll, {
-      passive: true,
+    const isTouch = window.matchMedia("(pointer: coarse)").matches;
+    const scaleMultiplier = isTouch ? 80 : 150;
+
+    const st = ScrollTrigger.create({
+      trigger: section,
+      start: "top top",
+      end: "bottom top",
+      scrub: true,
+      invalidateOnRefresh: true,
+      onUpdate: (self) => {
+        const p = self.progress;
+        zoomProgressRef.current = p;
+
+        const textScale = 1 + Math.pow(p, 3) * scaleMultiplier;
+        const textOpacity = Math.max(0, 1 - Math.pow(p, 4));
+        const bgOpacity = 1 - Math.pow(p, 2);
+
+        gsap.set(zoomLayer, {
+          scale: textScale,
+          opacity: textOpacity,
+          force3D: true,
+        });
+        gsap.set(stickyEl, { opacity: bgOpacity });
+        gsap.set(hintEl, { opacity: Math.max(0, 1 - p * 5) });
+      },
     });
 
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.visualViewport?.removeEventListener("scroll", handleScroll);
-    };
+    return () => st.kill();
   }, [viewportHeight]);
 
   useEffect(() => {
-    if (!isTouchDevice || zoomProgress > 0.05) return;
+    if (!isTouchDevice) return;
 
     let frame = 0;
     const start = performance.now();
 
     const animate = (now: number) => {
+      if (zoomProgressRef.current > 0.05) {
+        frame = requestAnimationFrame(animate);
+        return;
+      }
+
       const t = (now - start) / 1000;
       setIdleTilt({
         x: Math.sin(t * 0.9) * 0.35,
@@ -85,7 +119,7 @@ export function HeroSection() {
 
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
-  }, [isTouchDevice, zoomProgress]);
+  }, [isTouchDevice]);
 
   const activeTilt =
     Math.abs(tilt.x) > 0.05 || Math.abs(tilt.y) > 0.05 ? tilt : idleTilt;
@@ -114,10 +148,6 @@ export function HeroSection() {
     [handlePointerMove],
   );
 
-  const scaleMultiplier = isTouchDevice ? 80 : 150;
-  const textScale = 1 + Math.pow(zoomProgress, 3) * scaleMultiplier;
-  const textOpacity = Math.max(0, 1 - Math.pow(zoomProgress, 4));
-  const bgOpacity = 1 - Math.pow(zoomProgress, 2);
   const tiltStrength = isTouchDevice ? 8 : 12;
 
   return (
@@ -139,11 +169,9 @@ export function HeroSection() {
       </div>
 
       <div
+        ref={stickyRef}
         className={`hero-sticky perspective-1000 sticky top-0 flex w-full touch-pan-y items-center justify-center overflow-hidden bg-zinc-950 ${isTouchDevice ? "hero--touch" : ""}`}
-        style={{
-          height: `${viewportHeight}px`,
-          opacity: bgOpacity,
-        }}
+        style={{ height: `${viewportHeight}px` }}
         onMouseMove={handleMouseMove}
         onTouchMove={handleTouchMove}
       >
@@ -151,13 +179,11 @@ export function HeroSection() {
         <div className="video-montage-bg absolute inset-0 z-0 opacity-40" />
 
         <div
+          ref={zoomLayerRef}
           className="hero-zoom-layer zoom-through-o relative z-20 w-full max-w-[92vw]"
-          style={{
-            transform: `scale(${textScale})`,
-            opacity: textOpacity,
-          }}
         >
           <div
+            ref={tiltLayerRef}
             className={`hero-tilt-layer flex w-full flex-col items-center justify-center text-center ${hasEntered ? "hero-enter-active" : "hero-enter"}`}
             style={{
               transform: `rotateY(${activeTilt.x * tiltStrength}deg) rotateX(${-activeTilt.y * tiltStrength}deg)`,
@@ -194,8 +220,8 @@ export function HeroSection() {
 
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2">
           <div
-            className="hero-scroll-hint flex flex-col items-center gap-2 text-zinc-500 transition-opacity duration-300"
-            style={{ opacity: Math.max(0, 1 - zoomProgress * 5) }}
+            ref={hintRef}
+            className="hero-scroll-hint flex flex-col items-center gap-2 text-zinc-500"
           >
             <span className="font-mono text-[10px] tracking-widest uppercase">
               {isTouchDevice ? "Deslize para iniciar" : "Scroll to initialize"}

@@ -11,20 +11,26 @@ export function CurrentProjects() {
   const currentJob = cvContent.experience[0];
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (!sectionRef.current) return;
-      const { top } = sectionRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
+    const node = sectionRef.current;
+    if (!node) return;
 
-      if (top < windowHeight * 0.6 && top > 0) {
-        setIsFlashing(Math.floor(top) % 60 < 10);
-      } else {
-        setIsFlashing(false);
-      }
-    };
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) return;
+        const { top, isIntersecting } = entry.boundingClientRect;
+        const windowHeight = window.innerHeight;
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+        if (isIntersecting && top < windowHeight * 0.6 && top > 0) {
+          setIsFlashing(Math.floor(top) % 60 < 10);
+        } else {
+          setIsFlashing(false);
+        }
+      },
+      { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6] },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
   }, []);
 
   return (

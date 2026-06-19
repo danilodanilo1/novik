@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Play } from "lucide-react";
 import Image from "next/image";
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { BulletSprite } from "@/components/portfolio/BulletSprite";
 import { GamingClipsSection } from "@/components/portfolio/GamingClipsSection";
 import {
@@ -42,7 +42,7 @@ export function HorizontalGallery() {
   const fireTrailRef = useRef<HTMLDivElement>(null);
   const fireCoreRef = useRef<HTMLDivElement>(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const section = sectionRef.current;
     const pin = pinRef.current;
     const gamingLayer = gamingLayerRef.current;
@@ -79,8 +79,23 @@ export function HorizontalGallery() {
 
     hideBulletTear(overlay, bulletWrap, fireTrail, fireCore);
 
-    const getGamingScrollMax = () =>
-      Math.max(0, gamingLayer.scrollHeight - window.innerHeight);
+    let gamingScrollMax = Math.max(
+      0,
+      gamingLayer.scrollHeight - window.innerHeight,
+    );
+
+    const setGalleryX = gsap.quickSetter(galleryTrack, "x", "%");
+    const setBgTextX = gsap.quickSetter(bgText, "x", "%");
+    const setGamingY = gsap.quickSetter(gamingLayer, "y", "px");
+
+    const refreshGamingScrollMax = () => {
+      gamingScrollMax = Math.max(
+        0,
+        gamingLayer.scrollHeight - window.innerHeight,
+      );
+    };
+
+    window.addEventListener("load", refreshGamingScrollMax);
 
     const mm = gsap.matchMedia();
 
@@ -89,31 +104,25 @@ export function HorizontalGallery() {
       (context) => {
         const { isMobile } = context.conditions as { isMobile: boolean };
         const scrollDistance = isMobile ? "+=340%" : "+=420%";
+        const scrollTranslate = getScrollTranslate(isMobile);
 
         const st = ScrollTrigger.create({
           trigger: section,
           start: "top top",
           end: scrollDistance,
           pin: pin,
-          scrub: 0.35,
-          anticipatePin: 0,
+          scrub: true,
+          anticipatePin: 1,
+          fastScrollEnd: true,
           invalidateOnRefresh: true,
+          onRefresh: refreshGamingScrollMax,
           onUpdate: (self) => {
             const p = self.progress;
-            const gamingScrollMax = getGamingScrollMax();
 
             const galleryProgress = Math.min(1, p / GALLERY_PHASE);
 
-            const scrollTranslate = getScrollTranslate(isMobile);
-
-            gsap.set(galleryTrack, {
-              x: `${-galleryProgress * scrollTranslate}%`,
-              force3D: true,
-            });
-            gsap.set(bgText, {
-              x: `${-galleryProgress * 50}%`,
-              force3D: true,
-            });
+            setGalleryX(-galleryProgress * scrollTranslate);
+            setBgTextX(-galleryProgress * 50);
 
             if (p >= TEAR_END) {
               hideBulletTear(
@@ -125,10 +134,7 @@ export function HorizontalGallery() {
               );
 
               const clipsProgress = (p - TEAR_END) / (1 - TEAR_END);
-              gsap.set(gamingLayer, {
-                y: -clipsProgress * gamingScrollMax,
-                force3D: true,
-              });
+              setGamingY(-clipsProgress * gamingScrollMax);
             } else {
               const tearStart = isMobile ? GALLERY_PHASE : GALLERY_PHASE * 0.86;
 
@@ -144,10 +150,10 @@ export function HorizontalGallery() {
                   fireTrail,
                   fireCore,
                 );
-                gsap.set(gamingLayer, { y: 0, force3D: true });
+                setGamingY(0);
               } else {
                 hideBulletTear(overlay, bulletWrap, fireTrail, fireCore);
-                gsap.set(gamingLayer, { y: 0, force3D: true });
+                setGamingY(0);
               }
             }
           },
@@ -157,7 +163,10 @@ export function HorizontalGallery() {
       },
     );
 
-    return () => mm.revert();
+    return () => {
+      window.removeEventListener("load", refreshGamingScrollMax);
+      mm.revert();
+    };
   }, []);
 
   return (
