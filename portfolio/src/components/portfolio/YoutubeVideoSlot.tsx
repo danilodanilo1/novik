@@ -13,30 +13,40 @@ type YoutubeVideoSlotProps = {
 export function YoutubeVideoSlot({ clip }: YoutubeVideoSlotProps) {
   const [playing, setPlaying] = useState(false);
 
-  if (!clip.videoId) {
+  if (!clip.videoId && !clip.src) {
     return null;
   }
 
-  const watchUrl = `https://www.youtube.com/watch?v=${clip.videoId}`;
-  const embedUrl = `https://www.youtube-nocookie.com/embed/${clip.videoId}?rel=0&modestbranding=1&origin=${encodeURIComponent(siteConfig.url)}`;
+  const watchUrl = clip.videoId
+    ? `https://www.youtube.com/watch?v=${clip.videoId}`
+    : null;
+  const embedUrl = clip.videoId
+    ? `https://www.youtube-nocookie.com/embed/${clip.videoId}?rel=0&modestbranding=1&autoplay=1&origin=${encodeURIComponent(siteConfig.url)}`
+    : null;
 
-  if (clip.embedBlocked || !playing) {
+  if (clip.src && playing) {
+    return (
+      <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
+        <video
+          src={clip.src}
+          poster={clip.image}
+          controls
+          autoPlay
+          playsInline
+          preload="metadata"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </div>
+    );
+  }
+
+  if (!playing) {
     return (
       <button
         type="button"
-        onClick={() => {
-          if (clip.embedBlocked) {
-            window.open(watchUrl, "_blank", "noopener,noreferrer");
-            return;
-          }
-          setPlaying(true);
-        }}
+        onClick={() => setPlaying(true)}
         className="interactive group/video relative block aspect-video w-full overflow-hidden rounded-xl bg-black text-left"
-        aria-label={
-          clip.embedBlocked
-            ? `${clip.title} — abrir no YouTube`
-            : `${clip.title} — reproduzir vídeo`
-        }
+        aria-label={`${clip.title} — reproduzir vídeo`}
       >
         <Image
           src={clip.image}
@@ -57,7 +67,7 @@ export function YoutubeVideoSlot({ clip }: YoutubeVideoSlotProps) {
             />
           </div>
           <span className="font-mono text-[10px] tracking-widest text-zinc-300 uppercase">
-            {clip.embedBlocked ? "Abrir no YouTube" : "Assistir"}
+            Assistir
           </span>
         </div>
         <span className="absolute top-3 left-3 rounded-full bg-red-600 px-3 py-1 text-[10px] font-bold tracking-widest text-white uppercase">
@@ -72,15 +82,27 @@ export function YoutubeVideoSlot({ clip }: YoutubeVideoSlotProps) {
 
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
-      <iframe
-        src={embedUrl}
-        title={clip.title}
-        className="absolute inset-0 h-full w-full border-0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowFullScreen
-        loading="lazy"
-        referrerPolicy="strict-origin-when-cross-origin"
-      />
+      {embedUrl ? (
+        <iframe
+          src={embedUrl}
+          title={clip.title}
+          className="absolute inset-0 h-full w-full border-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          loading="lazy"
+          referrerPolicy="strict-origin-when-cross-origin"
+        />
+      ) : null}
+      {watchUrl ? (
+        <a
+          href={watchUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute right-3 bottom-3 rounded-full bg-black/60 px-3 py-1 text-[10px] font-bold tracking-widest text-zinc-300 uppercase backdrop-blur-sm transition-colors hover:text-white"
+        >
+          YouTube
+        </a>
+      ) : null}
     </div>
   );
 }

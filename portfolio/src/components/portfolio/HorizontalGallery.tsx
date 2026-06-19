@@ -17,12 +17,32 @@ gsap.registerPlugin(ScrollTrigger);
 
 const cases = cvContent.featuredWork;
 const caseCount = cases.length;
-const baseScrollTranslate = ((caseCount - 1) / caseCount) * 100;
 
-function getScrollTranslate(isMobile: boolean) {
-  const cardWidthVw = isMobile ? 85 : 60;
-  const centerOffset = (100 - cardWidthVw) / 2 / caseCount;
-  return baseScrollTranslate + centerOffset;
+type GalleryBounds = {
+  startX: number;
+  endX: number;
+};
+
+function measureGalleryBounds(
+  galleryTrack: HTMLElement,
+  pin: HTMLElement,
+): GalleryBounds {
+  const articles = galleryTrack.querySelectorAll("article");
+  const first = articles[0];
+  const last = articles[articles.length - 1];
+
+  if (!first || !last) {
+    return { startX: 0, endX: 0 };
+  }
+
+  const pinCenter = pin.offsetWidth / 2;
+  const firstCenter = first.offsetLeft + first.offsetWidth / 2;
+  const lastCenter = last.offsetLeft + last.offsetWidth / 2;
+
+  return {
+    startX: pinCenter - firstCenter,
+    endX: pinCenter - lastCenter,
+  };
 }
 
 /** Scroll budget por fase — proporcional ao conteúdo real */
@@ -31,7 +51,7 @@ function computeScrollPhases(
   gamingScrollMax: number,
   viewportH: number,
 ) {
-  const galleryPx = viewportH * (isMobile ? 2.6 : 3.2);
+  const galleryPx = viewportH * 2.6;
   const tearPx = viewportH * (isMobile ? 0.5 : 0.6);
   const gamingPx = Math.max(
     gamingScrollMax,
@@ -99,12 +119,14 @@ export function HorizontalGallery() {
       Math.max(0, gamingLayer.scrollHeight - getPinHeight());
 
     let gamingScrollMax = getGamingScrollMax();
+    let galleryBounds = measureGalleryBounds(galleryTrack, pin);
 
-    const setGalleryX = gsap.quickSetter(galleryTrack, "x", "%");
+    const setGalleryX = gsap.quickSetter(galleryTrack, "x", "px");
     const setBgTextX = gsap.quickSetter(bgText, "x", "%");
     const setGamingY = gsap.quickSetter(gamingLayer, "y", "px");
 
     const refreshMetrics = () => {
+      galleryBounds = measureGalleryBounds(galleryTrack, pin);
       const next = getGamingScrollMax();
       const changed = Math.abs(next - gamingScrollMax) > 8;
       gamingScrollMax = next;
@@ -115,6 +137,11 @@ export function HorizontalGallery() {
 
     const resizeObserver = new ResizeObserver(refreshMetrics);
     resizeObserver.observe(gamingLayer);
+    resizeObserver.observe(galleryTrack);
+
+    requestAnimationFrame(() => {
+      galleryBounds = measureGalleryBounds(galleryTrack, pin);
+    });
 
     const mm = gsap.matchMedia();
 
@@ -122,7 +149,6 @@ export function HorizontalGallery() {
       { isMobile: "(max-width: 768px)", isDesktop: "(min-width: 769px)" },
       (context) => {
         const { isMobile } = context.conditions as { isMobile: boolean };
-        const scrollTranslate = getScrollTranslate(isMobile);
 
         const st = ScrollTrigger.create({
           trigger: section,
@@ -153,7 +179,8 @@ export function HorizontalGallery() {
 
             if (p <= phases.galleryEnd) {
               const galleryProgress = p / phases.galleryEnd;
-              setGalleryX(-galleryProgress * scrollTranslate);
+              const { startX, endX } = galleryBounds;
+              setGalleryX(startX + galleryProgress * (endX - startX));
               setBgTextX(-galleryProgress * 50);
               hideBulletTear(overlay, bulletWrap, fireTrail, fireCore);
               setGamingY(0);
@@ -161,7 +188,8 @@ export function HorizontalGallery() {
             }
 
             if (p <= phases.tearEnd) {
-              setGalleryX(-scrollTranslate);
+              const { endX } = galleryBounds;
+              setGalleryX(endX);
               setBgTextX(-50);
 
               const tearSpan = phases.tearEnd - phases.galleryEnd;

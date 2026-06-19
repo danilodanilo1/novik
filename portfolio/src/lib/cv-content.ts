@@ -161,7 +161,6 @@ export const cvContent = {
       views: "61 mil",
       desc: "FragMovie da MIBR — Katowice 2019. O vídeo mais visto do canal Novik Movies.",
       videoId: "hl3m5BPLC4Q",
-      embedBlocked: true,
       image: "https://i.ytimg.com/vi/hl3m5BPLC4Q/hqdefault.jpg",
     },
     {
@@ -171,7 +170,6 @@ export const cvContent = {
       views: "45 mil",
       desc: "Edit de CS:GO com Fallenzão — série Sofrência, sync de áudio e cortes no beat.",
       videoId: "Q3GC2bczNaw",
-      embedBlocked: false,
       image: "https://i.ytimg.com/vi/Q3GC2bczNaw/hqdefault.jpg",
     },
     {
@@ -179,9 +177,8 @@ export const cvContent = {
       tag: "FRAGMOVIE",
       duration: "0:49",
       views: "35 mil",
-      desc: "FragMovie com Kscerato — trilha MC Poze; abre direto no YouTube por restrição de embed.",
+      desc: "FragMovie com Kscerato — trilha MC Poze, sync de áudio e cortes no beat.",
       videoId: "3kNNiiK70Y0",
-      embedBlocked: true,
       image: "https://i.ytimg.com/vi/3kNNiiK70Y0/hqdefault.jpg",
     },
     {
@@ -191,7 +188,6 @@ export const cvContent = {
       views: "28 mil",
       desc: "Segunda parte da série Sofrência — ritmo e narrativa competitiva.",
       videoId: "PEroWu6n65g",
-      embedBlocked: false,
       image: "https://i.ytimg.com/vi/PEroWu6n65g/hqdefault.jpg",
     },
     {
@@ -201,7 +197,6 @@ export const cvContent = {
       views: "28 mil",
       desc: "Edit rápido e impactante com a energia clássica dos fragmovies W7M.",
       videoId: "h12J7gyT3Pw",
-      embedBlocked: false,
       image: "https://i.ytimg.com/vi/h12J7gyT3Pw/hqdefault.jpg",
     },
     {
@@ -211,7 +206,6 @@ export const cvContent = {
       views: "22 mil",
       desc: "FragMovie com fallenzão e fnx — highlight editado para YouTube.",
       videoId: "Tj6fJiGlsqY",
-      embedBlocked: false,
       image: "https://i.ytimg.com/vi/Tj6fJiGlsqY/hqdefault.jpg",
     },
   ],
@@ -224,8 +218,8 @@ export type GamingClip = {
   views: string;
   desc: string;
   videoId: string | null;
-  /** Trilha/licença impede embed — abre no YouTube ao clicar. */
-  embedBlocked?: boolean;
+  /** Vídeo local em /public — prioridade sobre YouTube. */
+  src?: string;
   image: string;
 };
 
